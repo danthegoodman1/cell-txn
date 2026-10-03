@@ -478,7 +478,7 @@ func (t *table) bucketOf(key string, bits uint) string {
 // changedSince reports whether any bucket in [lo, hi] saw an insert or
 // delete after ts. hi == "" means unbounded.
 func (t *table) changedSince(lo, hi string, ts uint64) bool {
-	for n := t.buckets.seek(lo, nil); n != nil && (hi == "" || n.key <= hi); n = n.next[0].Load() {
+	for n := t.buckets.seek(lo, nil, nil); n != nil && (hi == "" || n.key <= hi); n = n.next[0].Load() {
 		if n.val > ts {
 			return true
 		}

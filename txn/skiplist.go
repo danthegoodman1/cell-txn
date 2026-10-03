@@ -42,11 +42,16 @@ func levelOf(key string) int {
 }
 
 // seek returns the first node with key >= k, filling preds when non-nil.
-func (s *skiplist[T]) seek(k string, preds *[maxLevel]*node[T]) *node[T] {
+// It returns the node it compared: reloading x.next[0] could see a smaller
+// key that the writer inserted after the comparison. Readers pass the
+// simulator's yield, which runs before seek returns so a commit can
+// interleave there; the writer passes nil.
+func (s *skiplist[T]) seek(k string, preds *[maxLevel]*node[T], yield func()) *node[T] {
 	x := &s.head
+	var n *node[T]
 	for i := maxLevel - 1; i >= 0; i-- {
 		for {
-			n := x.next[i].Load()
+			n = x.next[i].Load()
 			if n == nil || n.key >= k {
 				break
 			}
@@ -56,11 +61,17 @@ func (s *skiplist[T]) seek(k string, preds *[maxLevel]*node[T]) *node[T] {
 			preds[i] = x
 		}
 	}
-	return x.next[0].Load()
+	if yield != nil {
+		yield()
+		if bugSeekReload {
+			return x.next[0].Load()
+		}
+	}
+	return n
 }
 
-func (s *skiplist[T]) get(k string) *node[T] {
-	if n := s.seek(k, nil); n != nil && n.key == k {
+func (s *skiplist[T]) get(k string, yield func()) *node[T] {
+	if n := s.seek(k, nil, yield); n != nil && n.key == k {
 		return n
 	}
 	return nil
@@ -73,7 +84,7 @@ func (s *skiplist[T]) first() *node[T] { return s.head.next[0].Load() }
 // sorted list at level 0.
 func (s *skiplist[T]) getOrInsert(k string) *node[T] {
 	var preds [maxLevel]*node[T]
-	if n := s.seek(k, &preds); n != nil && n.key == k {
+	if n := s.seek(k, &preds, nil); n != nil && n.key == k {
 		return n
 	}
 	lvl := levelOf(k)

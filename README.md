@@ -9,7 +9,7 @@ go test -race ./...                                   # unit, stress, SQL and se
 go run ./cmd/sim -seeds 30000                         # core simulator: every workload and mode, simulated disk and crashes
 go run ./cmd/sim -seeds 30000 -workload sql           # SQL simulator with the end-to-end oracle
 go run ./cmd/sim -seed 1234 [-workload sql]           # replay one seed exactly
-go test -tags simbugs -run SelfTest ./sim             # the simulator must catch 11 deliberate bugs
+go test -tags simbugs -run SelfTest ./sim             # the simulator must catch 12 deliberate bugs
 go test -run TestCrash ./store/badger                 # kill -9 and recover against real Badger
 bench/enginetest.sh                                   # go-mysql-server's engine tests
 ```

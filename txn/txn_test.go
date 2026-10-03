@@ -342,7 +342,7 @@ func TestGCKeepsSnapshots(t *testing.T) {
 	must(t, tx.Set(users, A, Col(wallet), vals(wallet, 99)))
 	must(t, tx.Commit())
 	n := 0
-	for v := db.table(users).rows.get(A).val.head.Load(); v != nil; v = v.next.Load() {
+	for v := db.table(users).rows.get(A, nil).val.head.Load(); v != nil; v = v.next.Load() {
 		n++
 	}
 	if n != 2 {

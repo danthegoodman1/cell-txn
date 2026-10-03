@@ -158,9 +158,11 @@ func draw(seed uint64, r *rand.Rand, cfg Config) (Params, workload.Workload) {
 		p.CrashP = [...]float64{0, 0.0005, 0.002, 0.01}[r.IntN(4)]
 		p.SyncFailP = [...]float64{0, 0, 0.001, 0.01}[r.IntN(4)]
 		p.Latency = [...]int64{0, 5, 50}[r.IntN(3)]
-		// A separate stream leaves every other parameter as before.
+		// A separate stream leaves every other parameter as before. Delays
+		// stay below the 100 steps between crashes at the highest crash
+		// rate, so batches still sync between crashes.
 		g := rand.New(rand.NewPCG(seed, 0xbb67ae8584caa73b))
-		p.CommitDelay = [...]int64{0, 0, 0, 2, 10, 50, 200}[g.IntN(7)]
+		p.CommitDelay = [...]int64{0, 0, 0, 2, 10, 50}[g.IntN(6)]
 		if cfg.CommitDelay >= 0 {
 			p.CommitDelay = cfg.CommitDelay
 		}

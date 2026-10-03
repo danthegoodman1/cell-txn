@@ -83,7 +83,7 @@ func (t *Txn) commitLocked(ws []wslot) error {
 		tb := db.table(s.k.tbl)
 		n := s.n
 		if n == nil {
-			n = tb.rows.get(s.k.pk)
+			n = tb.rows.get(s.k.pk, nil)
 		}
 		var old []Value
 		if n != nil {
@@ -163,7 +163,7 @@ func entry(ins []install, entries *map[rowKey]int, tb *table, key string, v *ver
 		return ins
 	}
 	(*entries)[k] = len(ins)
-	return append(ins, install{tb, key, tb.rows.get(key), v, true})
+	return append(ins, install{tb, key, tb.rows.get(key, nil), v, true})
 }
 
 // validate fails if any version committed after readTs wrote a column this
@@ -176,7 +176,7 @@ func (t *Txn) validate() error {
 		n := r.n
 		if n == nil {
 			// The key was absent when read; a later commit may have added it.
-			if n = db.table(r.k.tbl).rows.get(r.k.pk); n == nil {
+			if n = db.table(r.k.tbl).rows.get(r.k.pk, nil); n == nil {
 				continue
 			}
 		}

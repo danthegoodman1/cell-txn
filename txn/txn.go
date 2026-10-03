@@ -283,7 +283,7 @@ func (t *Txn) get(tbl int, pk string, cols ColMask, track, full, current bool) (
 	if current {
 		w = t.pending(k)
 	}
-	n := t.table(tbl).rows.get(pk)
+	n := t.table(tbl).rows.get(pk, t.db.opts.Yield)
 	row, err := t.view(n, w)
 	if err != nil {
 		return nil, false, err
@@ -405,7 +405,7 @@ func (t *Txn) scan(tbl int, lo, hi string, sp scanSpec) ([]Rec, error) {
 		return nil, err
 	}
 	var out []Rec
-	n := tb.rows.seek(lo, nil)
+	n := tb.rows.seek(lo, nil, t.db.opts.Yield)
 	for {
 		for n != nil && inRange(n.key, lo, hi) && t.seenPending(rowKey{tbl, n.key}) != nil {
 			n = n.next[0].Load() // own writes come from the own list
@@ -456,7 +456,7 @@ func (t *Txn) indexScan(tbl, idx int, lo, hi string, sp scanSpec) ([]Rec, error)
 	}
 	sp.pred |= ix.def.Cols
 	var out []Rec
-	e := ix.tbl.rows.seek(lo, nil)
+	e := ix.tbl.rows.seek(lo, nil, t.db.opts.Yield)
 	for {
 		var ent *version
 		for ; e != nil && inRange(e.key, lo, hi); e = e.next[0].Load() {
@@ -472,7 +472,7 @@ func (t *Txn) indexScan(tbl, idx int, lo, hi string, sp scanSpec) ([]Rec, error)
 		switch {
 		case ent != nil && (len(own) == 0 || e.key < own[0].key):
 			k = rowKey{tbl, ent.row[0].(string)}
-			nd = tb.rows.get(k.pk)
+			nd = tb.rows.get(k.pk, t.db.opts.Yield)
 			row = t.snapshot(nd)
 			t.db.invariant(row != nil, "index %s entry %x has no row", ix.tbl.schema.Name, e.key)
 			e = e.next[0].Load()
@@ -493,7 +493,7 @@ func (t *Txn) indexScan(tbl, idx int, lo, hi string, sp scanSpec) ([]Rec, error)
 // write depends on and returns the pending write, the row's node and
 // whether the row exists.
 func (t *Txn) existing(k rowKey) (*write, *node[chain], bool) {
-	n := t.table(k.tbl).rows.get(k.pk)
+	n := t.table(k.tbl).rows.get(k.pk, t.db.opts.Yield)
 	if w := t.pending(k); w != nil {
 		return w, n, w.kind != wDelete
 	}
@@ -505,7 +505,7 @@ func (t *Txn) existingForSet(k rowKey) (*write, *node[chain], bool) {
 	if !bugSetNoExists {
 		return t.existing(k)
 	}
-	n := t.table(k.tbl).rows.get(k.pk)
+	n := t.table(k.tbl).rows.get(k.pk, t.db.opts.Yield)
 	if w := t.pending(k); w != nil {
 		return w, n, w.kind != wDelete
 	}
@@ -524,7 +524,7 @@ func (t *Txn) checkUnique(tb *table, pk string, row []Value, written ColMask) er
 		if !u {
 			continue
 		}
-		en := ix.tbl.rows.get(k)
+		en := ix.tbl.rows.get(k, t.db.opts.Yield)
 		if !bugUniqueNoRead {
 			t.record(rowKey{ix.tbl.id, k}, en, Exists)
 		}
@@ -600,7 +600,7 @@ func (t *Txn) Set(tbl int, pk string, cols ColMask, vals []Value) error {
 			// Overwriting a pending delta makes the statements that
 			// checked its intermediate value depend on the base value.
 			if superseded := w.delta & cols; superseded != 0 {
-				t.record(rowKey{tbl, pk}, t.table(tbl).rows.get(pk), superseded)
+				t.record(rowKey{tbl, pk}, t.table(tbl).rows.get(pk, t.db.opts.Yield), superseded)
 			}
 			w.set |= cols
 			w.delta &^= cols
@@ -619,7 +619,7 @@ func (t *Txn) Add(tbl int, pk string, col int, delta int64) error {
 	return t.update(tbl, pk, Col(col), func(w *write) error {
 		if w.kind == wUpdate && w.set&Col(col) == 0 {
 			if t.db.opts.Mode != CellDelta || tb.indexed()&Col(col) != 0 {
-				t.record(rowKey{tbl, pk}, tb.rows.get(pk), Col(col))
+				t.record(rowKey{tbl, pk}, tb.rows.get(pk, t.db.opts.Yield), Col(col))
 			}
 			s, ok := addDelta(w.deltas[col], delta)
 			if !ok {

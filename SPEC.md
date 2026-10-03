@@ -58,7 +58,7 @@ Deliverables:
   - A scan records the buckets its range overlaps; validation requires `lastTs <= readTs` for each. Comparing against a value read at scan time would miss inserts committed between `readTs` and the scan, because the scan reads the older snapshot.
   - Index key spaces have their own buckets; deriving an index entry counts as an insert or delete there.
 - **Auto-increment:** values come from a per-table atomic counter outside transactions, as in InnoDB's interleaved mode. Aborted transactions leave gaps.
-- **Row index:** a skiplist per table. The committer is its only writer; readers traverse it without locks. Node heights come from a hash of the key, so the structure is deterministic. Nodes are never removed, so transactions cache node pointers.
+- **Row index:** a skiplist per table. The committer is its only writer; readers traverse it without locks. A seek returns the node it compared, never a reloaded pointer, since the committer may have linked a smaller key in between. Node heights come from a hash of the key, so the structure is deterministic. Nodes are never removed, so transactions cache node pointers.
 - **Catalog:** tables, indexes and CHECKs are created outside transactions, under the commit lock. Creating an index builds it from the latest rows and fails on a duplicate. The table list is replaced copy-on-write.
 - Readers never take the commit lock.
 
@@ -153,7 +153,7 @@ The simulator (`cmd/sim`) runs the whole system on one goroutine from a single s
 - Workloads are straight-line Go against a client interface. The bench runs each client on a goroutine; the simulator runs each as a coroutine that yields before every operation.
 - The scheduler picks the next runnable coroutine from the seeded PRNG: neither sleeping nor blocked on a false condition. With nothing runnable and nothing asleep, the run fails as a deadlock. Skewed seeds give clients unequal weights, so slow clients hold old snapshots across many commits.
 - Transactions read snapshots, so a transaction's results depend only on the order of begins, commits and writer steps. Yielding at operation boundaries covers those orders.
-- The store calls `Options.Yield` wherever another goroutine can observe intermediate state. `Scan` and `IndexScan` yield between rows, so commits land mid-scan.
+- The store calls `Options.Yield` wherever another goroutine can observe intermediate state. `Scan` and `IndexScan` yield between rows, so commits land mid-scan, and every reader's skiplist seek yields before returning, so commits land mid-traversal.
 
 **Swarm parameters.** Each seed draws its own:
 - mode, workload, transaction mix and secondary indexes;
@@ -202,7 +202,8 @@ A crash stops every coroutine, keeps the disk's synced commits plus a random pre
 - an index scan records no buckets;
 - a commit is acknowledged before its sync;
 - a read-only commit skips its durability wait;
-- a flush acknowledges commits that joined the queue during its sync.
+- a flush acknowledges commits that joined the queue during its sync;
+- a reader's skiplist seek reloads its result after comparing.
 
 **SQL simulation.** `sim -workload sql` runs random SQL transactions through go-mysql-server and the store, with the clients as coroutines and no wire protocol.
 - Statements cover point, range and secondary-index reads, aggregates, joins, a correlated subquery, deltas over one and many rows, blind and indexed writes, unique-key collisions, `INSERT … ON DUPLICATE KEY UPDATE`, `REPLACE`, single and range deletes, explicit and autocommit transactions, and rollbacks.
