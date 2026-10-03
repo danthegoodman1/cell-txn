@@ -6,6 +6,7 @@ set -uo pipefail
 out=${1:-enginetest.txt}
 cd "$(dirname "$0")/.."
 json=$(mktemp)
+trap 'rm -f "$json"' EXIT
 CELLTNX_ENGINETEST=1 go test -count=1 -timeout 60m -run '^TestEngine$' -json ./sqlgms/ >"$json" 2>/dev/null
 python3 - "$json" "$out" <<'PY'
 import json, sys, collections

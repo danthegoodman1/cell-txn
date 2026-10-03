@@ -1,13 +1,16 @@
 // Command server serves cell-tnx over the MySQL protocol.
 //
-//	server -addr 127.0.0.1:3307 -mode cell+delta -dir ./data
+//	server -addr 127.0.0.1:3307 -mode cell+delta -dir ./data [-pprof 127.0.0.1:6060]
 package main
 
 import (
 	"flag"
 	"fmt"
+	"net/http"
+	_ "net/http/pprof"
 	"os"
 	"os/signal"
+	"runtime"
 	"runtime/debug"
 
 	"cell-tnx/sqlgms"
@@ -24,7 +27,16 @@ func main() {
 	bucketBits := flag.Uint("bucketbits", 4, "low key bits each bucket covers")
 	dir := flag.String("dir", "", "data directory; empty keeps everything in memory")
 	nosync := flag.Bool("nosync", false, "acknowledge commits before they sync")
+	pprofAddr := flag.String("pprof", "", "serve net/http/pprof on this address, with mutex sampling, e.g. 127.0.0.1:6060")
 	flag.Parse()
+	if *pprofAddr != "" {
+		runtime.SetMutexProfileFraction(10)
+		go func() {
+			if err := http.ListenAndServe(*pprofAddr, nil); err != nil {
+				fmt.Fprintln(os.Stderr, "pprof:", err)
+			}
+		}()
+	}
 
 	m, ok := map[string]txn.Mode{"row": txn.Row, "cell": txn.Cell, "cell+delta": txn.CellDelta}[*mode]
 	if !ok {

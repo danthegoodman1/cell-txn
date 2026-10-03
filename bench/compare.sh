@@ -2,9 +2,10 @@
 # Runs identical SQL against MySQL (SERIALIZABLE and REPEATABLE READ) and
 # cell-tnx in every mode, appending to a CSV.
 # Usage: bench/compare.sh out.csv [duration] [durable: 0|1]
-# ONLY=mysql or ONLY=ours runs one side. Durable runs keep cell-tnx's data
-# under $DATA_DIR (default .benchdata), which must share a disk with
-# MySQL's data: on tmpfs an fsync costs nothing.
+# ONLY=mysql or ONLY=ours runs one side. PREPARE=1 sends statements as
+# server-side prepared statements and adds -prep to each label. Durable
+# runs keep cell-tnx's data under $DATA_DIR (default .benchdata), which
+# must share a disk with MySQL's data: on tmpfs an fsync costs nothing.
 # Expects MySQL 8 at $MYSQL_DSN (default root@tcp(127.0.0.1:3308)/), on the
 # host network so both servers sit behind the same loopback interface:
 #   docker run -d --name celltnx-mysql --network host \
@@ -18,10 +19,17 @@ dur=${2:-8s}
 durable=${3:-0}
 cd "$(dirname "$0")/.."
 bin=$(mktemp -d)
+trap 'rm -rf "$bin"' EXIT
 go build -o "$bin/server" ./cmd/server
 go build -o "$bin/sqlbench" ./cmd/sqlbench
 mysql_dsn=${MYSQL_DSN:-root@tcp(127.0.0.1:3308)/}
 only=${ONLY:-all}
+prep=()
+suffix=
+if [ "${PREPARE:-0}" = 1 ]; then
+	prep=(-prepare)
+	suffix=-prep
+fi
 data_dir=${DATA_DIR:-$PWD/.benchdata}
 ours_dsn='root@tcp(127.0.0.1:3307)/'
 flush=0
@@ -31,7 +39,7 @@ docker exec celltnx-mysql mysql -uroot -e "SET GLOBAL innodb_flush_log_at_trx_co
 runs() { # dsn label extra-args...
 	local dsn=$1 label=$2
 	shift 2
-	b() { "$bin/sqlbench" -dsn "$dsn" -label "$label" -clients 32 -duration "$dur" -setup -csv "$out" "$@"; }
+	b() { "$bin/sqlbench" -dsn "$dsn" -label "$label$suffix" -clients 32 -duration "$dur" -setup -csv "$out" "${prep[@]}" "$@"; }
 	for wh in 1 4; do
 		b -workload tpcc -warehouses "$wh" -customers 100 -items 5000 "$@"
 	done
@@ -62,4 +70,5 @@ for mode in row cell cell+delta; do
 	runs "$ours_dsn" "cell-tnx-$mode"
 	kill "$pid"
 	wait "$pid" || true
+	rm -rf "${data_dir:?}/$mode"
 done

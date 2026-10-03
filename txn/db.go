@@ -71,7 +71,8 @@ type Schema struct {
 	BucketPrefix int
 }
 
-// Check is a CHECK constraint over the columns in Cols.
+// Check is a CHECK constraint over the columns in Cols. OK runs under the
+// commit lock, so calls never overlap.
 type Check struct {
 	Name string
 	Cols ColMask

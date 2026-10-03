@@ -47,6 +47,10 @@ func (t *tableDef) compile(checks sql.CheckConstraints) {
 	set := &checkSet{version: version}
 	var core []txn.Check
 	sch := t.sch
+	// Commit-time checks run one at a time under the core's commit lock,
+	// so they share a context; building one per row costs more than the
+	// rest of the commit.
+	cctx := sql.NewEmptyContext()
 	for _, ch := range checks {
 		if !ch.Enforced {
 			continue
@@ -70,7 +74,8 @@ func (t *tableDef) compile(checks sql.CheckConstraints) {
 			if err != nil {
 				return false
 			}
-			ok, err := c.ok(sql.NewEmptyContext(), r)
+			ok, err := c.ok(cctx, r)
+			cctx.ClearWarnings()
 			return err == nil && ok
 		}})
 	}

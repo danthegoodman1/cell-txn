@@ -39,6 +39,7 @@ type config struct {
 	think      time.Duration
 	isolation  string
 	disjoint   float64
+	prepare    bool
 }
 
 func main() {
@@ -60,6 +61,7 @@ func main() {
 	flag.DurationVar(&c.think, "think", 0, "pause between statements inside a transaction")
 	flag.StringVar(&c.isolation, "isolation", "", "transaction isolation for every connection (MySQL)")
 	flag.Float64Var(&c.disjoint, "disjoint", 0.5, "users: share of email updates; the rest touch wallet, the same column")
+	flag.BoolVar(&c.prepare, "prepare", false, "send statements with arguments as server-side prepared statements")
 	flag.Parse()
 
 	db, err := open(*dsn, "", c)
@@ -258,7 +260,7 @@ func run(db *sql.DB, c config) result {
 			}
 			defer conn.Close()
 			cl := &client{id: id, conn: conn, c: c, r: rand.New(rand.NewPCG(uint64(time.Now().UnixNano()), uint64(id))),
-				seq: time.Now().UnixMicro()*1000 + int64(id)<<32}
+				seq: time.Now().UnixMicro()*1000 + int64(id)<<32, stmts: map[string]*sql.Stmt{}}
 			if c.workload == "users" {
 				cl.zipf = workload.NewZipf(uint64(c.rows), c.theta)
 			}
@@ -313,12 +315,52 @@ func run(db *sql.DB, c config) result {
 var errRollback = errors.New("rollback")
 
 type client struct {
-	id   int
-	conn *sql.Conn
-	c    config
-	r    *rand.Rand
-	zipf *workload.Zipf
-	seq  int64
+	id    int
+	conn  *sql.Conn
+	c     config
+	r     *rand.Rand
+	zipf  *workload.Zipf
+	seq   int64
+	stmts map[string]*sql.Stmt // with -prepare, by query text
+}
+
+// stmt returns s prepared on the client's connection.
+func (cl *client) stmt(ctx context.Context, s string) (*sql.Stmt, error) {
+	if st, ok := cl.stmts[s]; ok {
+		return st, nil
+	}
+	st, err := cl.conn.PrepareContext(ctx, s)
+	if err != nil {
+		return nil, err
+	}
+	cl.stmts[s] = st
+	return st, nil
+}
+
+// query and exec send s as a prepared statement with -prepare and as
+// text with the arguments interpolated otherwise.
+func (cl *client) query(ctx context.Context, s string, args ...any) (*sql.Rows, error) {
+	if !cl.c.prepare {
+		return cl.conn.QueryContext(ctx, s, args...)
+	}
+	st, err := cl.stmt(ctx, s)
+	if err != nil {
+		return nil, err
+	}
+	return st.QueryContext(ctx, args...)
+}
+
+func (cl *client) exec(ctx context.Context, s string, args ...any) error {
+	if !cl.c.prepare {
+		_, err := cl.conn.ExecContext(ctx, s, args...)
+		return err
+	}
+	st, err := cl.stmt(ctx, s)
+	if err != nil {
+		return err
+	}
+	_, err = st.ExecContext(ctx, args...)
+	return err
 }
 
 // uniq returns a key no other client or run produces.
@@ -335,7 +377,7 @@ func (cl *client) txn(ctx context.Context, fn func(q func(string, ...any) *sql.R
 	var qerr error
 	query := func(s string, args ...any) *sql.Rows {
 		cl.pause()
-		rows, err := cl.conn.QueryContext(ctx, s, args...)
+		rows, err := cl.query(ctx, s, args...)
 		if err != nil && qerr == nil {
 			qerr = err
 		}
@@ -343,12 +385,11 @@ func (cl *client) txn(ctx context.Context, fn func(q func(string, ...any) *sql.R
 	}
 	exec := func(s string, args ...any) error {
 		cl.pause()
-		_, err := cl.conn.ExecContext(ctx, s, args...)
-		return err
+		return cl.exec(ctx, s, args...)
 	}
 	if err := fn(query, exec); err != nil || qerr != nil {
-		if err == nil {
-			err = qerr
+		if qerr != nil {
+			err = qerr // fn sees a failed query only as a missing result
 		}
 		if errors.Is(err, errRollback) {
 			cl.conn.ExecContext(ctx, "ROLLBACK")
@@ -399,19 +440,16 @@ func (cl *client) usersTxn() func(context.Context) error {
 	switch {
 	case k < 3:
 		return func(ctx context.Context) error {
-			_, err := cl.conn.ExecContext(ctx, "UPDATE users SET wallet = wallet - ? WHERE id = ?", x, id)
-			return err
+			return cl.exec(ctx, "UPDATE users SET wallet = wallet - ? WHERE id = ?", x, id)
 		}
 	case k < 5:
 		return func(ctx context.Context) error {
-			_, err := cl.conn.ExecContext(ctx, "UPDATE users SET wallet = wallet + ? WHERE id = ?", x, id)
-			return err
+			return cl.exec(ctx, "UPDATE users SET wallet = wallet + ? WHERE id = ?", x, id)
 		}
 	case k < 8:
 		email := fmt.Sprintf("e%d", cl.uniq())
 		return func(ctx context.Context) error {
-			_, err := cl.conn.ExecContext(ctx, "UPDATE users SET email = ? WHERE id = ?", email, id)
-			return err
+			return cl.exec(ctx, "UPDATE users SET email = ? WHERE id = ?", email, id)
 		}
 	default:
 		aid := cl.uniq()

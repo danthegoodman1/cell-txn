@@ -5,7 +5,9 @@ set -euo pipefail
 out=${1:-bench.csv}
 dur=${2:-5s}
 cd "$(dirname "$0")/.."
-bin=$(mktemp -d)/bench
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp"' EXIT
+bin=$tmp/bench
 go build -o "$bin" ./cmd/bench
 
 for wh in 1 2 4 8; do

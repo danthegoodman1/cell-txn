@@ -63,8 +63,15 @@ func (p *Provider) Database(_ *sql.Context, name string) (sql.Database, error) {
 	if d, ok := p.dbs[strings.ToLower(name)]; ok {
 		return d, nil
 	}
+	if strings.EqualFold(name, "mysql") {
+		// The planner looks up "mysql" for privileges on every statement,
+		// and a fresh error captures a stack trace.
+		return nil, errNoMySQLDB
+	}
 	return nil, sql.ErrDatabaseNotFound.New(name)
 }
+
+var errNoMySQLDB = sql.ErrDatabaseNotFound.New("mysql")
 
 func (p *Provider) HasDatabase(_ *sql.Context, name string) bool {
 	p.mu.RLock()
