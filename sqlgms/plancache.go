@@ -1,6 +1,7 @@
 package sqlgms
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"strconv"
@@ -47,6 +48,10 @@ type PlanCache struct {
 	// shapes holds the parsed shape of each statement text run with
 	// bindings, so prepared executions skip parsing.
 	shapes sync.Map // sql_mode \x00 text -> *preparedShape
+	// texts holds the shape of each token sequence, literals elided, seen
+	// in a parsed query, so later text queries with those tokens skip
+	// parsing.
+	texts sync.Map // sql_mode \x00 tokens -> *shape
 }
 
 type preparedShape struct {
@@ -68,11 +73,19 @@ func NewPlanCache(e *sqle.Engine, p *Provider) *PlanCache {
 
 // Query runs query, through a cached plan when one fits.
 func (c *PlanCache) Query(ctx *sql.Context, query string) (sql.Schema, sql.RowIter, *sql.QueryFlags, error) {
+	n, flags, err := c.PlanTokens(ctx, query)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	if n != nil {
+		starting(ctx, n)
+		return c.PrepQueryPlanForExecution(ctx, query, n, flags)
+	}
 	stmt, _, rest, err := c.Parser.ParseWithOptions(ctx, query, ';', false, sql.LoadSqlMode(ctx).ParserOptions())
 	if err != nil || rest != "" {
 		return c.Engine.Query(ctx, query)
 	}
-	n, flags, err := c.Plan(ctx, query, stmt)
+	n, flags, err = c.Plan(ctx, query, stmt)
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -147,47 +160,31 @@ func (c *PlanCache) Plan(ctx *sql.Context, query string, stmt ast.Statement) (sq
 	if !ok {
 		return nil, nil, nil
 	}
+	c.noteTokens(ctx, query, sh)
 	return c.plan(ctx, query, stmt, sh, nil)
 }
 
 // plan looks up stmt's cached plan; a placeholder in its shape takes its
 // value from bindings.
 func (c *PlanCache) plan(ctx *sql.Context, query string, stmt ast.Statement, sh shape, bindings map[string]ast.Expr) (sql.Node, *sql.QueryFlags, error) {
-	// The analyzer rejects writes in read-only transactions, and checks
-	// privileges when the server has users; cached plans skip both.
-	if tx := ctx.GetTransaction(); (tx != nil && tx.IsReadOnly()) || c.Analyzer.Catalog.MySQLDb.Enabled() {
+	if c.bypass(ctx) {
 		return nil, nil, nil
 	}
-	coll := ctx.GetCollation()
-	lits := make([]sql.Expression, len(sh.lits))
-	key := make([]byte, 0, len(sh.text)+64)
-	key = append(key, sh.text...)
-	key = append(key, 0)
-	key = append(key, ctx.GetCurrentDatabase()...)
-	key = append(key, 0)
-	key = strconv.AppendUint(key, uint64(coll), 10)
-	key = append(key, 0)
-	key = append(key, sql.LoadSqlMode(ctx).String()...)
-	key = append(key, 0)
-	key = strconv.AppendUint(key, c.p.schema.Load(), 10)
+	vals := make([]*ast.SQLVal, len(sh.lits))
 	for i, v := range sh.lits {
 		if v.Type == ast.ValArg {
-			b, isVal := bindings[strings.TrimPrefix(string(v.Val), ":")].(*ast.SQLVal)
-			if !isVal {
+			b, ok := bindings[strings.TrimPrefix(string(v.Val), ":")].(*ast.SQLVal)
+			if !ok {
 				return nil, nil, nil
 			}
 			v = b
 		}
-		lit, ok := literal(v, coll)
-		if !ok {
-			return nil, nil, nil
-		}
-		lits[i] = lit
-		key = append(key, 0)
-		key = append(key, lit.Type().String()...)
+		vals[i] = v
 	}
-	k := string(key)
-
+	k, lits, ok := c.key(ctx, sh, vals)
+	if !ok {
+		return nil, nil, nil
+	}
 	v, ok := c.plans.Load(k)
 	if !ok {
 		t, err := c.build(ctx, query, stmt, sh, lits, bindings)
@@ -201,7 +198,47 @@ func (c *PlanCache) plan(ctx *sql.Context, query string, stmt ast.Statement, sh 
 		}
 		return nil, nil, nil
 	}
-	t := v.(*template)
+	return c.hit(ctx, query, v.(*template), lits, func() (ast.Statement, map[string]ast.Expr, error) { return stmt, bindings, nil })
+}
+
+// bypass reports whether ctx's statement must take the full path: the
+// analyzer rejects writes in read-only transactions, and checks privileges
+// when the server has users, and cached plans skip both.
+func (c *PlanCache) bypass(ctx *sql.Context) bool {
+	tx := ctx.GetTransaction()
+	return (tx != nil && tx.IsReadOnly()) || c.Analyzer.Catalog.MySQLDb.Enabled()
+}
+
+// key returns the cache key for shape sh with literal values vals, and
+// the literals; it reports false for a value it doesn't type.
+func (c *PlanCache) key(ctx *sql.Context, sh shape, vals []*ast.SQLVal) (string, []sql.Expression, bool) {
+	coll := ctx.GetCollation()
+	lits := make([]sql.Expression, len(vals))
+	key := make([]byte, 0, len(sh.text)+64)
+	key = append(key, sh.text...)
+	key = append(key, 0)
+	key = append(key, ctx.GetCurrentDatabase()...)
+	key = append(key, 0)
+	key = strconv.AppendUint(key, uint64(coll), 10)
+	key = append(key, 0)
+	key = append(key, sql.LoadSqlMode(ctx).String()...)
+	key = append(key, 0)
+	key = strconv.AppendUint(key, c.p.schema.Load(), 10)
+	for i, v := range vals {
+		lit, ok := literal(v, coll)
+		if !ok {
+			return "", nil, false
+		}
+		lits[i] = lit
+		key = append(key, 0)
+		key = append(key, lit.Type().String()...)
+	}
+	return string(key), lits, true
+}
+
+// hit instantiates t for lits. With Verify set, it also analyzes the
+// statement actual returns and requires the same plan.
+func (c *PlanCache) hit(ctx *sql.Context, query string, t *template, lits []sql.Expression, actual func() (ast.Statement, map[string]ast.Expr, error)) (sql.Node, *sql.QueryFlags, error) {
 	if t.plan == nil {
 		return nil, nil, nil
 	}
@@ -210,6 +247,10 @@ func (c *PlanCache) plan(ctx *sql.Context, query string, stmt ast.Statement, sh 
 		return nil, nil, nil
 	}
 	if c.Verify {
+		stmt, bindings, err := actual()
+		if err != nil {
+			return nil, nil, fmt.Errorf("plan cache: %q: %w", query, err)
+		}
 		want, _, err := c.analyze(ctx, query, stmt, bindings)
 		if err != nil {
 			return nil, nil, fmt.Errorf("plan cache: %q: full analysis failed where the cache did not: %w", query, err)
@@ -221,6 +262,88 @@ func (c *PlanCache) plan(ctx *sql.Context, query string, stmt ast.Statement, sh 
 	c.hits.Add(1)
 	flags := t.flags
 	return n, &flags, nil
+}
+
+// PlanTokens finds a text query's plan from its tokens alone, without
+// parsing, once a parsed query with the same tokens apart from its
+// literals has been planned. It returns nil when the query must be parsed.
+func (c *PlanCache) PlanTokens(ctx *sql.Context, query string) (sql.Node, *sql.QueryFlags, error) {
+	if c.bypass(ctx) {
+		return nil, nil, nil
+	}
+	tk, vals, ok := tokenize(query)
+	if !ok {
+		return nil, nil, nil
+	}
+	sh, ok := c.texts.Load(sql.LoadSqlMode(ctx).String() + "\x00" + tk)
+	if !ok {
+		return nil, nil, nil
+	}
+	k, lits, ok := c.key(ctx, *sh.(*shape), vals)
+	if !ok {
+		return nil, nil, nil
+	}
+	t, ok := c.plans.Load(k)
+	if !ok {
+		return nil, nil, nil
+	}
+	return c.hit(ctx, query, t.(*template), lits, func() (ast.Statement, map[string]ast.Expr, error) {
+		stmt, _, _, err := c.Parser.ParseWithOptions(ctx, query, ';', false, sql.LoadSqlMode(ctx).ParserOptions())
+		return stmt, nil, err
+	})
+}
+
+// noteTokens records query's token shape for PlanTokens, if its tokens'
+// literals are sh's literals in order.
+func (c *PlanCache) noteTokens(ctx *sql.Context, query string, sh shape) {
+	if c.size.Load() >= maxPlans {
+		return
+	}
+	tk, vals, ok := tokenize(query)
+	if !ok || len(vals) != len(sh.lits) {
+		return
+	}
+	for i, v := range vals {
+		if v.Type != sh.lits[i].Type || !bytes.Equal(v.Val, sh.lits[i].Val) {
+			return
+		}
+	}
+	if _, loaded := c.texts.LoadOrStore(sql.LoadSqlMode(ctx).String()+"\x00"+tk, &sh); !loaded {
+		c.size.Add(1)
+	}
+}
+
+// tokenize returns query's tokens, with each integer and string literal
+// written as ?, and those literals in order. It declines text whose tokens
+// depend on more than the text: comments, which MySQL may execute, and
+// double quotes, which sql_mode may make identifiers.
+func tokenize(query string) (string, []*ast.SQLVal, bool) {
+	if strings.ContainsAny(query, "\"#") || strings.Contains(query, "/*") || strings.Contains(query, "--") {
+		return "", nil, false
+	}
+	tkn := ast.NewStringTokenizer(query)
+	key := make([]byte, 0, len(query)+16)
+	var lits []*ast.SQLVal
+	for {
+		typ, val := tkn.Scan()
+		switch typ {
+		case 0:
+			return string(key), lits, true
+		case ast.LEX_ERROR:
+			return "", nil, false
+		case ast.INTEGRAL:
+			lits = append(lits, ast.NewIntVal(bytes.Clone(val)))
+			key = append(key, '?')
+		case ast.STRING:
+			lits = append(lits, ast.NewStrVal(bytes.Clone(val)))
+			key = append(key, '?')
+		default:
+			key = strconv.AppendInt(key, int64(typ), 10)
+			key = append(key, ':')
+			key = append(key, val...)
+		}
+		key = append(key, ' ')
+	}
 }
 
 // analyze builds and analyzes stmt with bindings as the engine does.

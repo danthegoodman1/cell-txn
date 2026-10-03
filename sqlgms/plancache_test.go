@@ -246,3 +246,18 @@ func TestPlanCacheBindings(t *testing.T) {
 		t.Fatalf("got %s", got)
 	}
 }
+
+func TestTokenize(t *testing.T) {
+	a, lits, ok := tokenize("UPDATE t SET c = 'it''s', a = a + 3 WHERE id = 42")
+	if !ok || len(lits) != 3 || string(lits[0].Val) != "it's" || string(lits[1].Val) != "3" || string(lits[2].Val) != "42" {
+		t.Fatalf("tokenize: %q %v %v", a, lits, ok)
+	}
+	if b, _, _ := tokenize("UPDATE t SET c = 'x', a = a + 7 WHERE id = 1"); b != a {
+		t.Fatalf("same tokens apart from literals, different keys:\n%q\n%q", a, b)
+	}
+	for _, q := range []string{`SELECT a FROM t WHERE id = 1 /* x */`, `SELECT "a" FROM t`, "SELECT a FROM t -- x", "SELECT a FROM t # x"} {
+		if _, _, ok := tokenize(q); ok {
+			t.Fatalf("tokenize accepted %q", q)
+		}
+	}
+}

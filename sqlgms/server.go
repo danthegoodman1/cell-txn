@@ -221,6 +221,10 @@ func (h *cachedHandler) ComQuery(ctx context.Context, c *mysql.Conn, query strin
 // per-statement bookkeeping the engine does for a query it plans.
 func (h *cachedHandler) plan(ctx context.Context, s *Session, query string) sql.Node {
 	sctx := sql.NewContext(ctx, sql.WithSession(s))
+	if n, _, err := h.cache.PlanTokens(sctx, query); err == nil && n != nil {
+		starting(sctx, n)
+		return n
+	}
 	stmt, _, rest, err := h.cache.Parser.ParseWithOptions(sctx, query, ';', false, sql.LoadSqlMode(sctx).ParserOptions())
 	if err != nil || rest != "" {
 		return nil
