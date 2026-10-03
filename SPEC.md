@@ -218,6 +218,7 @@ The last three surface only through interleave points: with `-interleave 0` each
 - **Oracle:** every committed transaction's statements are rerun, one transaction at a time in serialization order, on go-mysql-server's in-memory reference engine. Every result (rows, matched or affected counts, error classes) and both final tables must match. UPDATE results compare matched rows.
 - A transaction the store rejected at commit must hit a CHECK error when run serially after the writers before it, on a reference rebuilt from them: the reference engine's ROLLBACK leaves its secondary indexes stale.
 - Deltas in one transaction share a sign, so a transaction whose final rows pass its CHECKs passes them after every statement, as the reference engine requires.
+- Statements go through the plan cache with `Verify` set, so every cached plan is checked against a fresh analysis.
 - go-mysql-server initializes package globals when an engine is built, so `sqlgms` builds engines under a lock; parallel sweeps are race-free under `-race`.
 
 **CI and soak:**
@@ -307,6 +308,15 @@ It replaces the node's table with a view carrying these sets. Assigned non-delta
 - `ConflictError` becomes `sql.ErrLockDeadlock` (MySQL 1213, which clients retry).
 - `ConstraintError` at COMMIT becomes a CHECK violation.
 - `DuplicateKeyError` becomes a primary- or unique-key violation (MySQL 1062) at the statement.
+
+**Plan cache:** a statement that differs from an earlier one only in its literals reuses that statement's analyzed plan, skipping plan building and analysis.
+- Cached shapes: START TRANSACTION, COMMIT and ROLLBACK; SELECT and UPDATE whose WHERE pins every primary-key column to a literal, with SET values that are literals, NULL, columns or `col ± <integer literal>`; and INSERT of literal rows. Everything else takes the full path.
+- The key is the statement with literals elided, each literal's type, the current database, the connection collation, `sql_mode` and a schema version that every DDL bumps.
+- A hit copies the cached plan, rebuilds the primary-key lookup from the new literals with go-mysql-server's range builder, and swaps the new literals into SET expressions or INSERT rows. go-mysql-server still executes the plan, through `PrepQueryPlanForExecution` in process and `ComExecuteBound` over the wire.
+- The cache stays out of read-only transactions and servers with users, whose checks live in analysis, and out of INSERTs into tables with an auto-increment column, whose first generated row the analyzer picks from the literals.
+- With `Verify` set, as in the SQL simulation and the engine tests, every new template must rebuild its own plan and every hit is analyzed again; any difference fails the statement.
+
+**Process list:** `sqlgms` replaces go-mysql-server's process list, which takes one global lock per statement, with one that locks per connection; SHOW PROCESSLIST, KILL and cancellation behave the same.
 
 **Server:** `sqlgms.Serve` starts go-mysql-server's MySQL-protocol server over the store, in memory or durable under a data directory.
 

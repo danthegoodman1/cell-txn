@@ -27,10 +27,12 @@ type Provider struct {
 	OnDDL   func(db, query string) error
 	ddlMu   sync.Mutex
 	lastDDL *sql.Context
+	schema  atomic.Uint64 // bumped by every catalog change; keys cached plans
 }
 
 // ddl reports a catalog change made by ctx's statement.
 func (p *Provider) ddl(ctx *sql.Context) error {
+	p.schema.Add(1)
 	p.ddlMu.Lock()
 	defer p.ddlMu.Unlock()
 	if p.OnDDL == nil || ctx == nil || ctx == p.lastDDL {

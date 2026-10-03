@@ -28,6 +28,7 @@ func main() {
 	dir := flag.String("dir", "", "data directory; empty keeps everything in memory")
 	nosync := flag.Bool("nosync", false, "acknowledge commits before they sync")
 	commitDelay := flag.Duration("commitdelay", 0, "wait this long before each sync so concurrent commits share it")
+	noPlanCache := flag.Bool("noplancache", false, "plan every statement in full")
 	pprofAddr := flag.String("pprof", "", "serve net/http/pprof on this address, with mutex sampling, e.g. 127.0.0.1:6060")
 	flag.Parse()
 	if *pprofAddr != "" {
@@ -44,7 +45,7 @@ func main() {
 		fmt.Fprintln(os.Stderr, "unknown mode", *mode)
 		os.Exit(2)
 	}
-	s, err := sqlgms.Serve(sqlgms.ServerConfig{Addr: *addr, Mode: m, BucketBits: *bucketBits, Dir: *dir, NoSync: *nosync, CommitDelay: *commitDelay})
+	s, err := sqlgms.Serve(sqlgms.ServerConfig{Addr: *addr, Mode: m, BucketBits: *bucketBits, Dir: *dir, NoSync: *nosync, CommitDelay: *commitDelay, NoPlanCache: *noPlanCache})
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)

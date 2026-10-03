@@ -21,7 +21,7 @@ go run ./cmd/server -addr 127.0.0.1:3307 -mode cell+delta [-dir ./data]
 mysql -h 127.0.0.1 -P 3307 -u root
 ```
 
-`-mode` is `row`, `cell` or `cell+delta`. With `-dir`, commits persist in Badger and are acknowledged once synced (`-nosync` acknowledges first). `-commitdelay 500us` holds each sync open that long so concurrent commits share it. `-pprof 127.0.0.1:6060` serves `net/http/pprof`, with mutex sampling, for profiling under load.
+`-mode` is `row`, `cell` or `cell+delta`. With `-dir`, commits persist in Badger and are acknowledged once synced (`-nosync` acknowledges first). `-commitdelay 500us` holds each sync open that long so concurrent commits share it. `-noplancache` plans every statement in full instead of reusing cached plans. `-pprof 127.0.0.1:6060` serves `net/http/pprof`, with mutex sampling, for profiling under load.
 
 ## Benchmarks
 

@@ -48,7 +48,6 @@ func (h *harness) NewEngine(t *testing.T) (enginetest.QueryEngine, error) {
 	h.pro = NewProvider(txn.Open(txn.Options{Mode: txn.CellDelta, BucketBits: 4}))
 	h.session = nil
 	e := NewEngine(h.pro)
-	e.Analyzer.Catalog.MySQLDb.AddRootAccount()
 	e.Analyzer.Catalog.InfoSchema = information_schema.NewInformationSchemaDatabase()
 	e.Analyzer.Runner = e
 	var flat []setup.SetupScript
@@ -58,7 +57,15 @@ func (h *harness) NewEngine(t *testing.T) (enginetest.QueryEngine, error) {
 	if len(flat) == 0 {
 		flat = setup.MydbData
 	}
-	return enginetest.RunSetupScripts(h.NewContext(), e, flat, true)
+	e, err := enginetest.RunSetupScripts(h.NewContext(), e, flat, true)
+	if err != nil {
+		return nil, err
+	}
+	// Queries go through the plan cache, which re-analyzes every hit and
+	// fails the query if the cached plan differs.
+	pc := NewPlanCache(e, h.pro)
+	pc.Verify = true
+	return pc, nil
 }
 
 func (h *harness) SupportsNativeIndexCreation() bool { return true }

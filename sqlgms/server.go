@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sync"
 	"time"
 
 	sqle "github.com/dolthub/go-mysql-server"
@@ -31,6 +32,8 @@ type ServerConfig struct {
 	// CommitDelay holds each sync open that long so concurrent commits
 	// share it.
 	CommitDelay time.Duration
+	// NoPlanCache plans every statement in full.
+	NoPlanCache bool
 }
 
 // Server is a running MySQL-protocol server.
@@ -38,6 +41,7 @@ type Server struct {
 	*server.Server
 	Engine   *sqle.Engine
 	Provider *Provider
+	Cache    *PlanCache // nil with NoPlanCache
 	store    *badger.Store
 	catalog  *os.File
 }
@@ -70,14 +74,29 @@ func Serve(cfg ServerConfig) (*Server, error) {
 			}
 		}()
 	}
+	h := &cachedHandler{}
+	if !cfg.NoPlanCache {
+		h.cache = NewPlanCache(s.Engine, s.Provider)
+		s.Cache = h.cache
+	}
 	sb := func(ctx context.Context, conn *mysql.Conn, addr string) (sql.Session, error) {
 		base, err := sql.BaseSessionFromConnection(ctx, conn, addr)
 		if err != nil {
 			return nil, err
 		}
-		return NewSession(base, s.Provider), nil
+		sess := NewSession(base, s.Provider)
+		h.sessions.Store(conn.ConnectionID, sess)
+		return sess, nil
 	}
-	srv, err := server.NewServer(server.Config{Protocol: "tcp", Address: cfg.Addr}, s.Engine, sql.NewContext, sb, nil)
+	wrap := func(inner mysql.Handler) (mysql.Handler, error) {
+		gh, ok := inner.(*server.Handler)
+		if !ok {
+			return nil, fmt.Errorf("sqlgms: unexpected handler %T", inner)
+		}
+		h.Handler = gh
+		return h, nil
+	}
+	srv, err := server.NewServerWithHandler(server.Config{Protocol: "tcp", Address: cfg.Addr}, s.Engine, sql.NewContext, sb, nil, wrap)
 	if err != nil {
 		return nil, err
 	}
@@ -176,4 +195,43 @@ func (s *Server) Close() error {
 		err = errors.Join(err, s.catalog.Close())
 	}
 	return err
+}
+
+// cachedHandler runs each statement the plan cache covers as a bound plan
+// through go-mysql-server's handler, which still owns transactions, the
+// process list, results and errors; other statements take its ComQuery.
+type cachedHandler struct {
+	*server.Handler
+	cache    *PlanCache
+	sessions sync.Map // connection ID -> *Session
+}
+
+func (h *cachedHandler) ComQuery(ctx context.Context, c *mysql.Conn, query string, callback mysql.ResultSpoolFn) error {
+	if v, ok := h.sessions.Load(c.ConnectionID); ok && h.cache != nil {
+		if n := h.plan(ctx, v.(*Session), query); n != nil {
+			return h.ComExecuteBound(ctx, c, query, n, callback)
+		}
+	}
+	return h.Handler.ComQuery(ctx, c, query, callback)
+}
+
+// plan returns the cached plan for query, or nil. It also does the
+// per-statement bookkeeping the engine does for a query it plans.
+func (h *cachedHandler) plan(ctx context.Context, s *Session, query string) sql.Node {
+	sctx := sql.NewContext(ctx, sql.WithSession(s))
+	stmt, _, rest, err := h.cache.Parser.ParseWithOptions(sctx, query, ';', false, sql.LoadSqlMode(sctx).ParserOptions())
+	if err != nil || rest != "" {
+		return nil
+	}
+	n, _, err := h.cache.Plan(sctx, query, stmt)
+	if err != nil || n == nil {
+		return nil
+	}
+	starting(sctx, n)
+	return n
+}
+
+func (h *cachedHandler) ConnectionClosed(c *mysql.Conn) {
+	h.sessions.Delete(c.ConnectionID)
+	h.Handler.ConnectionClosed(c)
 }

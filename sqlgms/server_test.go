@@ -1,6 +1,7 @@
 package sqlgms
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"net"
@@ -82,5 +83,93 @@ func TestServerRestart(t *testing.T) {
 	}
 	if _, err := conn.ExecContext(t.Context(), "UPDATE acct SET balance = balance - 100 WHERE owner = 'bob'"); err == nil {
 		t.Fatal("CHECK not enforced after restart")
+	}
+}
+
+// Over the wire, cached statements return the same results, affected-row
+// counts, errors and warnings as fully planned ones.
+func TestServerPlanCache(t *testing.T) {
+	s, db := start(t, "")
+	defer s.Close()
+	defer db.Close()
+	ctx := context.Background()
+	c, err := db.Conn(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer c.Close()
+	exec := func(q string) (int64, error) {
+		res, err := c.ExecContext(ctx, q)
+		if err != nil {
+			return 0, err
+		}
+		return res.RowsAffected()
+	}
+	for _, q := range []string{
+		"CREATE DATABASE app", "USE app",
+		"CREATE TABLE acct (id INT PRIMARY KEY, owner VARCHAR(20), balance INT NOT NULL, CHECK (balance >= 0))",
+		"INSERT INTO acct VALUES (1, 'ann', 10), (2, 'bob', 20)",
+	} {
+		if _, err := exec(q); err != nil {
+			t.Fatalf("%s: %v", q, err)
+		}
+	}
+	var firstErr string
+	for i := range 3 {
+		id := 1 + i%2
+		if n, err := exec(fmt.Sprintf("UPDATE acct SET balance = balance + %d WHERE id = %d", i+1, id)); err != nil || n != 1 {
+			t.Fatalf("round %d update: %d rows, %v", i, n, err)
+		}
+		if n, err := exec("UPDATE acct SET balance = balance + 1 WHERE id = 9"); err != nil || n != 0 {
+			t.Fatalf("round %d missing row: %d rows, %v", i, n, err)
+		}
+		for _, q := range []string{"START TRANSACTION", "UPDATE acct SET owner = 'x' WHERE id = 1", "ROLLBACK"} {
+			if _, err := exec(q); err != nil {
+				t.Fatalf("round %d %s: %v", i, q, err)
+			}
+		}
+		_, err := exec("UPDATE acct SET balance = balance - 100 WHERE id = 2")
+		if err == nil {
+			t.Fatalf("round %d: CHECK violation succeeded", i)
+		}
+		if i == 0 {
+			firstErr = err.Error()
+		} else if err.Error() != firstErr {
+			t.Fatalf("round %d: cached plan errs %q, planned errs %q", i, err, firstErr)
+		}
+		// A cached statement clears the previous statement's warnings.
+		var v int
+		if err := c.QueryRowContext(ctx, "SELECT CAST('7x' AS SIGNED)").Scan(&v); err != nil {
+			t.Fatal(err)
+		}
+		var owner string
+		if err := c.QueryRowContext(ctx, fmt.Sprintf("SELECT owner FROM acct WHERE id = %d", id)).Scan(&owner); err != nil {
+			t.Fatal(err)
+		}
+		rows, err := c.QueryContext(ctx, "SHOW WARNINGS")
+		if err != nil {
+			t.Fatal(err)
+		}
+		n := 0
+		for rows.Next() {
+			n++
+		}
+		rows.Close()
+		if n != 0 {
+			t.Fatalf("round %d: %d warnings after a cached SELECT", i, n)
+		}
+	}
+	var b1, b2 int
+	if err := c.QueryRowContext(ctx, "SELECT balance FROM acct WHERE id = 1").Scan(&b1); err != nil {
+		t.Fatal(err)
+	}
+	if err := c.QueryRowContext(ctx, "SELECT balance FROM acct WHERE id = 2").Scan(&b2); err != nil {
+		t.Fatal(err)
+	}
+	if b1 != 14 || b2 != 22 {
+		t.Fatalf("balances %d, %d; want 14, 22", b1, b2)
+	}
+	if s.Cache.Hits() < 10 {
+		t.Fatalf("%d cache hits over the wire", s.Cache.Hits())
 	}
 }

@@ -366,7 +366,10 @@ func RunSQL(seed uint64, cfg Config) (res Result) {
 	s := &sched{}
 	db := txn.Open(txn.Options{Mode: p.Mode, BucketBits: p.BucketBits, Yield: s.Yield, Interleave: s.interleaver(seed, p.Interleave), Wait: s.Wait, NoInvariants: cfg.NoInvariants})
 	pro := sqlgms.NewProvider(db)
-	eng := sqlgms.NewEngine(pro)
+	// Statements go through the plan cache, which re-analyzes every hit and
+	// fails the run if the cached plan differs.
+	eng := sqlgms.NewPlanCache(sqlgms.NewEngine(pro), pro)
+	eng.Verify = true
 	var logs []sqlTxn
 	trace := uint64(fnvBasis)
 	hash := func(str string) {
