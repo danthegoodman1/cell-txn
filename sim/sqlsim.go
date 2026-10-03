@@ -12,6 +12,9 @@ import (
 	"github.com/dolthub/go-mysql-server/sql"
 	"github.com/dolthub/go-mysql-server/sql/plan"
 	"github.com/dolthub/go-mysql-server/sql/types"
+	"github.com/dolthub/vitess/go/sqltypes"
+	querypb "github.com/dolthub/vitess/go/vt/proto/query"
+	ast "github.com/dolthub/vitess/go/vt/sqlparser"
 
 	"cell-tnx/check"
 	"cell-tnx/sqlgms"
@@ -54,6 +57,7 @@ type sqlParams struct {
 	MaxStmts int
 	Rollback float64
 	Think    float64
+	Prepared float64 // share of cacheable statements sent with bindings, as prepared statements run
 }
 
 const (
@@ -87,6 +91,7 @@ func drawSQL(r *rand.Rand) sqlParams {
 		MaxStmts: 1 + r.IntN(6),
 		Rollback: r.Float64() * 0.1,
 		Think:    r.Float64() * 0.2,
+		Prepared: [...]float64{0, 0.3, 1}[r.IntN(3)],
 	}
 	for i := range p.Weights {
 		if r.IntN(4) != 0 {
@@ -101,21 +106,47 @@ func drawSQL(r *rand.Rand) sqlParams {
 type sqlEnv struct {
 	e interface {
 		Query(*sql.Context, string) (sql.Schema, sql.RowIter, *sql.QueryFlags, error)
+		QueryWithBindings(*sql.Context, string, ast.Statement, map[string]ast.Expr, *sql.QueryFlags) (sql.Schema, sql.RowIter, *sql.QueryFlags, error)
 	}
 	s sql.Session
 }
 
-func (x sqlEnv) query(q string) ([]sql.Row, error) {
+func (x sqlEnv) query(q string) ([]sql.Row, error) { return x.queryBound(q, nil) }
+
+// queryBound runs q with bindings, as a prepared statement runs.
+func (x sqlEnv) queryBound(q string, bindings map[string]ast.Expr) ([]sql.Row, error) {
 	ctx := sql.NewContext(context.Background(), sql.WithSession(x.s))
 	ctx.SetCurrentDatabase("db")
 	if l, ok := x.s.(sql.LifecycleAwareSession); ok {
 		defer l.CommandEnd()
 	}
-	_, it, _, err := x.e.Query(ctx, q)
+	_, it, _, err := x.e.QueryWithBindings(ctx, q, nil, bindings, nil)
 	if err != nil {
 		return nil, err
 	}
 	return sql.RowIterToRows(ctx, it)
+}
+
+// parameterize turns a statement the plan cache covers into prepared
+// statement text and its bindings.
+func parameterize(q string) (string, map[string]ast.Expr, bool) {
+	stmt, err := ast.Parse(q)
+	if err != nil || !sqlgms.Cacheable(stmt) {
+		return "", nil, false
+	}
+	vars := map[string]*querypb.BindVariable{}
+	ast.Normalize(stmt, vars, "v")
+	bindings := make(map[string]ast.Expr, len(vars))
+	for name, bv := range vars {
+		v, err := sqltypes.BindVariableToValue(bv)
+		if err != nil {
+			return "", nil, false
+		}
+		if bindings[name], err = ast.ExprFromValue(v); err != nil {
+			return "", nil, false
+		}
+	}
+	return ast.String(stmt), bindings, true
 }
 
 // canon renders a statement's outcome so both engines' outcomes compare
@@ -172,7 +203,17 @@ type sqlClient struct {
 
 func (c *sqlClient) exec(q string) ([]sql.Row, error) {
 	c.sched.Yield()
-	rows, err := c.env.query(q)
+	bound, bindings, prepared := "", map[string]ast.Expr(nil), false
+	if c.p.Prepared > 0 && c.r.Float64() < c.p.Prepared {
+		bound, bindings, prepared = parameterize(q)
+	}
+	var rows []sql.Row
+	var err error
+	if prepared {
+		rows, err = c.env.queryBound(bound, bindings)
+	} else {
+		rows, err = c.env.query(q)
+	}
 	c.trace(q + " => " + canon(q, rows, err))
 	return rows, err
 }

@@ -3,6 +3,7 @@ package sqlgms
 import (
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -13,6 +14,7 @@ import (
 	"github.com/dolthub/go-mysql-server/sql/plan"
 	"github.com/dolthub/go-mysql-server/sql/planbuilder"
 	"github.com/dolthub/go-mysql-server/sql/transform"
+	"github.com/dolthub/go-mysql-server/sql/types"
 	ast "github.com/dolthub/vitess/go/vt/sqlparser"
 )
 
@@ -42,6 +44,15 @@ type PlanCache struct {
 	plans  sync.Map // key -> *template
 	size   atomic.Int64
 	hits   atomic.Int64
+	// shapes holds the parsed shape of each statement text run with
+	// bindings, so prepared executions skip parsing.
+	shapes sync.Map // sql_mode \x00 text -> *preparedShape
+}
+
+type preparedShape struct {
+	stmt ast.Statement
+	sh   shape
+	ok   bool
 }
 
 // Hits reports how many statements ran a cached plan.
@@ -72,13 +83,50 @@ func (c *PlanCache) Query(ctx *sql.Context, query string) (sql.Schema, sql.RowIt
 	return c.PrepQueryPlanForExecution(ctx, query, n, flags)
 }
 
-// QueryWithBindings runs a plain query as Query does, and anything with a
-// parsed form, bindings or flags through the engine's full path.
+// QueryWithBindings runs a plain query as Query does and a query with
+// bindings, as from a prepared statement, through a cached plan when one
+// fits; anything with a parsed form or flags takes the engine's full path.
 func (c *PlanCache) QueryWithBindings(ctx *sql.Context, query string, parsed ast.Statement, bindings map[string]ast.Expr, qFlags *sql.QueryFlags) (sql.Schema, sql.RowIter, *sql.QueryFlags, error) {
-	if parsed != nil || len(bindings) > 0 || qFlags != nil {
+	if parsed != nil || qFlags != nil {
 		return c.Engine.QueryWithBindings(ctx, query, parsed, bindings, qFlags)
 	}
-	return c.Query(ctx, query)
+	if len(bindings) == 0 {
+		return c.Query(ctx, query)
+	}
+	n, flags, err := c.PlanBound(ctx, query, bindings)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	if n == nil {
+		return c.Engine.QueryWithBindings(ctx, query, nil, bindings, nil)
+	}
+	starting(ctx, n)
+	return c.PrepQueryPlanForExecution(ctx, query, n, flags)
+}
+
+// PlanBound is Plan for a query run with bindings. It parses each query
+// text once.
+func (c *PlanCache) PlanBound(ctx *sql.Context, query string, bindings map[string]ast.Expr) (sql.Node, *sql.QueryFlags, error) {
+	mode := sql.LoadSqlMode(ctx)
+	k := mode.String() + "\x00" + query
+	v, ok := c.shapes.Load(k)
+	if !ok {
+		p := &preparedShape{}
+		stmt, _, rest, err := c.Parser.ParseWithOptions(ctx, query, ';', false, mode.ParserOptions())
+		if err == nil && rest == "" {
+			p.stmt = stmt
+			p.sh, p.ok = shapeOf(stmt)
+		}
+		if c.size.Load() < maxPlans {
+			c.shapes.Store(k, p)
+		}
+		v = p
+	}
+	p := v.(*preparedShape)
+	if !p.ok {
+		return nil, nil, nil
+	}
+	return c.plan(ctx, query, p.stmt, p.sh, bindings)
 }
 
 // starting does the bookkeeping the engine does for a statement it plans:
@@ -99,30 +147,50 @@ func (c *PlanCache) Plan(ctx *sql.Context, query string, stmt ast.Statement) (sq
 	if !ok {
 		return nil, nil, nil
 	}
+	return c.plan(ctx, query, stmt, sh, nil)
+}
+
+// plan looks up stmt's cached plan; a placeholder in its shape takes its
+// value from bindings.
+func (c *PlanCache) plan(ctx *sql.Context, query string, stmt ast.Statement, sh shape, bindings map[string]ast.Expr) (sql.Node, *sql.QueryFlags, error) {
 	// The analyzer rejects writes in read-only transactions, and checks
 	// privileges when the server has users; cached plans skip both.
 	if tx := ctx.GetTransaction(); (tx != nil && tx.IsReadOnly()) || c.Analyzer.Catalog.MySQLDb.Enabled() {
 		return nil, nil, nil
 	}
-	b := planbuilder.New(ctx, c.Analyzer.Catalog, c.EventScheduler, c.Parser)
+	coll := ctx.GetCollation()
 	lits := make([]sql.Expression, len(sh.lits))
-	var key strings.Builder
-	key.WriteString(sh.text)
-	fmt.Fprintf(&key, "\x00%s\x00%d\x00%s\x00%d", ctx.GetCurrentDatabase(), ctx.GetCollation(), sql.LoadSqlMode(ctx), c.p.schema.Load())
+	key := make([]byte, 0, len(sh.text)+64)
+	key = append(key, sh.text...)
+	key = append(key, 0)
+	key = append(key, ctx.GetCurrentDatabase()...)
+	key = append(key, 0)
+	key = strconv.AppendUint(key, uint64(coll), 10)
+	key = append(key, 0)
+	key = append(key, sql.LoadSqlMode(ctx).String()...)
+	key = append(key, 0)
+	key = strconv.AppendUint(key, c.p.schema.Load(), 10)
 	for i, v := range sh.lits {
-		lit, err := convertVal(b, v)
-		if err != nil {
+		if v.Type == ast.ValArg {
+			b, isVal := bindings[strings.TrimPrefix(string(v.Val), ":")].(*ast.SQLVal)
+			if !isVal {
+				return nil, nil, nil
+			}
+			v = b
+		}
+		lit, ok := literal(v, coll)
+		if !ok {
 			return nil, nil, nil
 		}
 		lits[i] = lit
-		key.WriteString("\x00")
-		key.WriteString(lit.Type().String())
+		key = append(key, 0)
+		key = append(key, lit.Type().String()...)
 	}
-	k := key.String()
+	k := string(key)
 
 	v, ok := c.plans.Load(k)
 	if !ok {
-		t, err := c.build(ctx, query, stmt, sh, lits)
+		t, err := c.build(ctx, query, stmt, sh, lits, bindings)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -142,7 +210,7 @@ func (c *PlanCache) Plan(ctx *sql.Context, query string, stmt ast.Statement) (sq
 		return nil, nil, nil
 	}
 	if c.Verify {
-		want, _, err := c.analyze(ctx, query, stmt)
+		want, _, err := c.analyze(ctx, query, stmt, bindings)
 		if err != nil {
 			return nil, nil, fmt.Errorf("plan cache: %q: full analysis failed where the cache did not: %w", query, err)
 		}
@@ -155,9 +223,12 @@ func (c *PlanCache) Plan(ctx *sql.Context, query string, stmt ast.Statement) (sq
 	return n, &flags, nil
 }
 
-// analyze builds and analyzes stmt as the engine does for a query.
-func (c *PlanCache) analyze(ctx *sql.Context, query string, stmt ast.Statement) (sql.Node, *sql.QueryFlags, error) {
+// analyze builds and analyzes stmt with bindings as the engine does.
+func (c *PlanCache) analyze(ctx *sql.Context, query string, stmt ast.Statement, bindings map[string]ast.Expr) (sql.Node, *sql.QueryFlags, error) {
 	b := planbuilder.New(ctx, c.Analyzer.Catalog, c.EventScheduler, c.Parser)
+	if len(bindings) > 0 {
+		b.SetBindings(bindings)
+	}
 	bound, flags, err := b.BindOnly(stmt, query, &sql.QueryFlags{})
 	if err != nil {
 		return nil, nil, err
@@ -166,14 +237,40 @@ func (c *PlanCache) analyze(ctx *sql.Context, query string, stmt ast.Statement) 
 	return n, flags, err
 }
 
-// convertVal builds a literal as the plan builder does.
-func convertVal(b *planbuilder.Builder, v *ast.SQLVal) (lit sql.Expression, err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			err = fmt.Errorf("plan cache: literal %q: %v", v.Val, r)
-		}
-	}()
-	return b.ConvertVal(v), nil
+// literal builds an integer or string literal as the plan builder does:
+// an integer takes the narrowest type that holds it, a string is longtext
+// in the connection collation. Integers too wide for 64 bits, which the
+// builder makes decimals, report false.
+func literal(v *ast.SQLVal, coll sql.CollationID) (*expression.Literal, bool) {
+	s := string(v.Val)
+	if v.Type == ast.StrVal {
+		return expression.NewLiteral(s, types.CreateLongText(coll)), true
+	}
+	if i, err := strconv.ParseInt(s, 10, 8); err == nil {
+		return expression.NewLiteral(int8(i), types.Int8), true
+	}
+	if u, err := strconv.ParseUint(s, 10, 8); err == nil {
+		return expression.NewLiteral(uint8(u), types.Uint8), true
+	}
+	if i, err := strconv.ParseInt(s, 10, 16); err == nil {
+		return expression.NewLiteral(int16(i), types.Int16), true
+	}
+	if u, err := strconv.ParseUint(s, 10, 16); err == nil {
+		return expression.NewLiteral(uint16(u), types.Uint16), true
+	}
+	if i, err := strconv.ParseInt(s, 10, 32); err == nil {
+		return expression.NewLiteral(int32(i), types.Int32), true
+	}
+	if u, err := strconv.ParseUint(s, 10, 32); err == nil {
+		return expression.NewLiteral(uint32(u), types.Uint32), true
+	}
+	if i, err := strconv.ParseInt(s, 10, 64); err == nil {
+		return expression.NewLiteral(i, types.Int64), true
+	}
+	if u, err := strconv.ParseUint(s, 10, 64); err == nil {
+		return expression.NewLiteral(u, types.Uint64), true
+	}
+	return nil, false
 }
 
 type stmtKind int
@@ -185,7 +282,14 @@ const (
 	insertValues
 )
 
-// shape is a cacheable statement: its text with each literal printed as ?,
+// Cacheable reports whether the plan cache covers stmt's shape.
+func Cacheable(stmt ast.Statement) bool {
+	_, ok := shapeOf(stmt)
+	return ok
+}
+
+// shape is a cacheable statement: its text with each literal or
+// placeholder printed as ?,
 // its literals in print order, and for a point SELECT or UPDATE the
 // literal each WHERE equality compares its column to.
 type shape struct {
@@ -273,7 +377,7 @@ func shapeOf(stmt ast.Statement) (shape, bool) {
 	buf.Myprintf("%v", stmt)
 	sh.text = buf.String()
 	for _, v := range sh.lits {
-		if v.Type != ast.IntVal && v.Type != ast.StrVal {
+		if v.Type != ast.IntVal && v.Type != ast.StrVal && v.Type != ast.ValArg {
 			return sh, false
 		}
 	}
@@ -326,7 +430,7 @@ func setValue(e ast.Expr, table string) bool {
 	case *ast.BinaryExpr:
 		col, ok := x.Left.(*ast.ColName)
 		v, isLit := x.Right.(*ast.SQLVal)
-		return ok && isLit && ofTable(col, table) && v.Type == ast.IntVal &&
+		return ok && isLit && ofTable(col, table) && (v.Type == ast.IntVal || v.Type == ast.ValArg) &&
 			(x.Operator == ast.PlusStr || x.Operator == ast.MinusStr)
 	}
 	return false
@@ -388,8 +492,8 @@ type template struct {
 // build analyzes stmt and returns its template, whose plan is nil unless
 // the analyzed plan has a shape instantiate can rebuild. With Verify set,
 // the template must rebuild the analyzed plan from the same literals.
-func (c *PlanCache) build(ctx *sql.Context, query string, stmt ast.Statement, sh shape, lits []sql.Expression) (*template, error) {
-	n, flags, err := c.analyze(ctx, query, stmt)
+func (c *PlanCache) build(ctx *sql.Context, query string, stmt ast.Statement, sh shape, lits []sql.Expression, bindings map[string]ast.Expr) (*template, error) {
+	n, flags, err := c.analyze(ctx, query, stmt, bindings)
 	if err != nil {
 		return &template{}, nil
 	}

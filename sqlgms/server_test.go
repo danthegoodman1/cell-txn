@@ -173,3 +173,47 @@ func TestServerPlanCache(t *testing.T) {
 		t.Fatalf("%d cache hits over the wire", s.Cache.Hits())
 	}
 }
+
+// Prepared statements run through the cache over the wire.
+func TestServerPreparedPlanCache(t *testing.T) {
+	s, db := start(t, "")
+	defer s.Close()
+	defer db.Close()
+	for _, q := range []string{"CREATE DATABASE app", "USE app",
+		"CREATE TABLE acct (id INT PRIMARY KEY, owner VARCHAR(20), balance INT NOT NULL)",
+		"INSERT INTO acct VALUES (1, 'ann', 10), (2, 'bob', 20)"} {
+		if _, err := db.Exec(q); err != nil {
+			t.Fatalf("%s: %v", q, err)
+		}
+	}
+	pdb, err := sql.Open("mysql", fmt.Sprintf("root@tcp(%s)/app", s.Listener.Addr()))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer pdb.Close()
+	pdb.SetMaxOpenConns(1)
+	for i := range 4 {
+		id := 1 + i%2
+		if _, err := pdb.Exec("UPDATE acct SET balance = balance + ? WHERE id = ?", i+1, id); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := pdb.Exec("INSERT INTO acct VALUES (?, ?, ?)", 10+i, "x", i); err != nil {
+			t.Fatal(err)
+		}
+		var owner string
+		var bal int
+		if err := pdb.QueryRow("SELECT owner, balance FROM acct WHERE id = ?", id).Scan(&owner, &bal); err != nil {
+			t.Fatal(err)
+		}
+	}
+	var b1, b2, n int
+	pdb.QueryRow("SELECT balance FROM acct WHERE id = ?", 1).Scan(&b1)
+	pdb.QueryRow("SELECT balance FROM acct WHERE id = ?", 2).Scan(&b2)
+	pdb.QueryRow("SELECT COUNT(*) FROM acct").Scan(&n)
+	if b1 != 14 || b2 != 26 || n != 6 {
+		t.Fatalf("balances %d, %d and %d rows; want 14, 26 and 6", b1, b2, n)
+	}
+	if s.Cache.Hits() < 8 {
+		t.Fatalf("%d cache hits for prepared statements", s.Cache.Hits())
+	}
+}

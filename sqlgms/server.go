@@ -15,6 +15,8 @@ import (
 	"github.com/dolthub/go-mysql-server/server"
 	"github.com/dolthub/go-mysql-server/sql"
 	"github.com/dolthub/vitess/go/mysql"
+	"github.com/dolthub/vitess/go/sqltypes"
+	ast "github.com/dolthub/vitess/go/vt/sqlparser"
 
 	"cell-tnx/store/badger"
 	"cell-tnx/txn"
@@ -224,6 +226,37 @@ func (h *cachedHandler) plan(ctx context.Context, s *Session, query string) sql.
 		return nil
 	}
 	n, _, err := h.cache.Plan(sctx, query, stmt)
+	if err != nil || n == nil {
+		return nil
+	}
+	starting(sctx, n)
+	return n
+}
+
+// ComStmtExecute runs a prepared statement as a bound plan when the cache
+// covers it.
+func (h *cachedHandler) ComStmtExecute(ctx context.Context, c *mysql.Conn, prepare *mysql.PrepareData, callback func(*sqltypes.Result) error) error {
+	if v, ok := h.sessions.Load(c.ConnectionID); ok && h.cache != nil {
+		if n := h.planBound(ctx, v.(*Session), prepare); n != nil {
+			return h.ComExecuteBound(ctx, c, prepare.PrepareStmt, n, func(r *sqltypes.Result, _ bool) error { return callback(r) })
+		}
+	}
+	return h.Handler.ComStmtExecute(ctx, c, prepare, callback)
+}
+
+func (h *cachedHandler) planBound(ctx context.Context, s *Session, prepare *mysql.PrepareData) sql.Node {
+	bindings := make(map[string]ast.Expr, len(prepare.BindVars))
+	for name, bv := range prepare.BindVars {
+		v, err := sqltypes.BindVariableToValue(bv)
+		if err != nil {
+			return nil
+		}
+		if bindings[name], err = ast.ExprFromValue(v); err != nil {
+			return nil
+		}
+	}
+	sctx := sql.NewContext(ctx, sql.WithSession(s))
+	n, _, err := h.cache.PlanBound(sctx, prepare.PrepareStmt, bindings)
 	if err != nil || n == nil {
 		return nil
 	}

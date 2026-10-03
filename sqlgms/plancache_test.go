@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/dolthub/go-mysql-server/sql"
+	ast "github.com/dolthub/vitess/go/vt/sqlparser"
 
 	"cell-tnx/txn"
 )
@@ -194,5 +195,54 @@ func TestPlanCacheVerify(t *testing.T) {
 	})
 	if _, err := c.query("SELECT nxt FROM district WHERE w = 2 AND d = 1"); err == nil || !strings.Contains(err.Error(), "differs from analyzed plan") {
 		t.Fatalf("corrupt template: got %v, want a plan mismatch", err)
+	}
+}
+
+// Queries with bindings, as prepared statements run, share the cache with
+// text statements of the same shape.
+func TestPlanCacheBindings(t *testing.T) {
+	v := newEnv(t, txn.CellDelta)
+	pc := NewPlanCache(v.e, v.p)
+	pc.Verify = true
+	s := NewSession(sql.NewBaseSession(), v.p)
+	bound := func(q string, want bool, args ...ast.Expr) string {
+		t.Helper()
+		b := map[string]ast.Expr{}
+		for i, a := range args {
+			b[fmt.Sprintf("v%d", i+1)] = a
+		}
+		ctx := sql.NewContext(context.Background(), sql.WithSession(s))
+		ctx.SetCurrentDatabase("db")
+		defer s.CommandEnd()
+		before := pc.Hits()
+		_, iter, _, err := pc.QueryWithBindings(ctx, q, nil, b, nil)
+		if err != nil {
+			t.Fatalf("%s: %v", q, err)
+		}
+		rows, err := sql.RowIterToRows(ctx, iter)
+		if err != nil {
+			t.Fatalf("%s: %v", q, err)
+		}
+		if got := pc.Hits() > before; got != want {
+			t.Fatalf("%s: hit %v, want %v", q, got, want)
+		}
+		return fmt.Sprint(rows)
+	}
+	num := func(n int) ast.Expr { return ast.NewIntVal([]byte(fmt.Sprint(n))) }
+	str := func(x string) ast.Expr { return ast.NewStrVal([]byte(x)) }
+	bound("SELECT name, wallet FROM users WHERE id = ?", false, num(1))
+	if got := bound("SELECT name, wallet FROM users WHERE id = ?", true, num(2)); got != "[[b 100]]" {
+		t.Fatalf("got %s", got)
+	}
+	// A text statement of the same shape reuses the plan.
+	c := &cached{t, pc, s}
+	c.hit("SELECT name, wallet FROM users WHERE id = 1", true)
+	bound("UPDATE users SET wallet = wallet + ? WHERE id = ?", false, num(3), num(1))
+	bound("UPDATE users SET wallet = wallet + ? WHERE id = ?", true, num(4), num(2))
+	bound("INSERT INTO users VALUES (?, ?, ?, ?)", false, num(3), str("c"), str("c@x"), num(7))
+	bound("INSERT INTO users VALUES (?, ?, ?, ?)", true, num(4), str("d"), str("d@x"), num(8))
+	bound("INSERT INTO users VALUES (?, ?, ?, ?)", false, num(5), &ast.NullVal{}, str("e@x"), num(9))
+	if got := c.rows("SELECT id, name, wallet FROM users ORDER BY id"); got != "[[1 a 8] [2 b 104] [3 c 7] [4 d 8] [5 <nil> 9]]" {
+		t.Fatalf("got %s", got)
 	}
 }

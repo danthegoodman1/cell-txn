@@ -218,7 +218,7 @@ The last three surface only through interleave points: with `-interleave 0` each
 - **Oracle:** every committed transaction's statements are rerun, one transaction at a time in serialization order, on go-mysql-server's in-memory reference engine. Every result (rows, matched or affected counts, error classes) and both final tables must match. UPDATE results compare matched rows.
 - A transaction the store rejected at commit must hit a CHECK error when run serially after the writers before it, on a reference rebuilt from them: the reference engine's ROLLBACK leaves its secondary indexes stale.
 - Deltas in one transaction share a sign, so a transaction whose final rows pass its CHECKs passes them after every statement, as the reference engine requires.
-- Statements go through the plan cache with `Verify` set, so every cached plan is checked against a fresh analysis.
+- Statements go through the plan cache with `Verify` set, so every cached plan is checked against a fresh analysis. Each seed sends a drawn share of cacheable statements (none, 30% or all) as prepared statements with bindings, while the oracle replays their text.
 - go-mysql-server initializes package globals when an engine is built, so `sqlgms` builds engines under a lock; parallel sweeps are race-free under `-race`.
 
 **CI and soak:**
@@ -313,6 +313,7 @@ It replaces the node's table with a view carrying these sets. Assigned non-delta
 - Cached shapes: START TRANSACTION, COMMIT and ROLLBACK; SELECT and UPDATE whose WHERE pins every primary-key column to a literal, with SET values that are literals, NULL, columns or `col ± <integer literal>`; and INSERT of literal rows. Everything else takes the full path.
 - The key is the statement with literals elided, each literal's type, the current database, the connection collation, `sql_mode` and a schema version that every DDL bumps.
 - A hit copies the cached plan, rebuilds the primary-key lookup from the new literals with go-mysql-server's range builder, and swaps the new literals into SET expressions or INSERT rows. go-mysql-server still executes the plan, through `PrepQueryPlanForExecution` in process and `ComExecuteBound` over the wire.
+- Prepared statements share the cache: a placeholder takes its bound value as a literal, so a prepared statement and the text statement it stands for share one plan. The parsed shape of each prepared statement's text is cached too, so its executions skip parsing.
 - The cache stays out of read-only transactions and servers with users, whose checks live in analysis, and out of INSERTs into tables with an auto-increment column, whose first generated row the analyzer picks from the literals.
 - With `Verify` set, as in the SQL simulation and the engine tests, every new template must rebuild its own plan and every hit is analyzed again; any difference fails the statement.
 
