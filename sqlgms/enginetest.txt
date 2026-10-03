@@ -1,0 +1,180 @@
+suite                 pass  fail  skip
+ChecksOnInsert          14     0     0
+ChecksOnUpdate          13     0     0
+CreateTable            141    12     5
+Delete                 133     0     0
+DeleteErrors            14     0     0
+InsertInto             200    14     5
+InsertIntoErrors        25     0     0
+Queries                  0     1     0
+ReplaceInto             14     0     0
+Scripts                871    85    23
+TransactionScripts     242    46     2
+Truncate                 7     4     1
+Update                  45     0     0
+UpdateErrors            21     0     0
+TOTAL                 1740   162    36
+
+Failing cases:
+TestEngine/CreateTable/CREATE_TABLE_t1_(____pk_bigint_primary_key,____v1_bigint_default_(2)_comment_'hi_there',____index_idx_v1_(v1)_comment_'index_here'____)/CREATE_TABLE_t1_(____pk_bigint_primary_key,____v1_bigint_default_(2)_comment_'hi_there',____index_idx_v1_(v1)_comment_'index_here'____)
+TestEngine/CreateTable/CREATE_TABLE_t1_LIKE_mytable/CREATE_TABLE_t1_LIKE_mytable
+TestEngine/CreateTable/Identifier_lengths/create_table_d_(a_int_primary_key,_constraint_abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijkl_foreign_key_(a)_references_parent(a))
+TestEngine/CreateTable/create_table_like_works_and_can_have_keys_removed
+TestEngine/CreateTable/create_table_t1_(i_int_primary_key,_b1_blob,_b2_blob,_index(b1(10)),_index(b2(20)),_index(b1(123),_b2(456)))/create_table_t1_(i_int_primary_key,_b1_blob,_b2_blob,_index(b1(10)),_index(b2(20)),_index(b1(123),_b2(456)))
+TestEngine/CreateTable/create_table_t1_(i_int_primary_key,_b1_blob,_b2_blob,_index(b1(123),_b2(456)))/create_table_t1_(i_int_primary_key,_b1_blob,_b2_blob,_index(b1(123),_b2(456)))
+TestEngine/CreateTable/create_table_t1_(i_int_primary_key,_b1_blob,_b2_blob,_unique_index(b1(123),_b2(456)))/create_table_t1_(i_int_primary_key,_b1_blob,_b2_blob,_unique_index(b1(123),_b2(456)))
+TestEngine/CreateTable/create_table_tableWithComment_(pk_int)_COMMENT='Table_Comments=Still_Work'/create_table_tableWithComment_(pk_int)_COMMENT='Table_Comments=Still_Work'
+TestEngine/CreateTable/create_table_tableWithComment_(pk_int)_COMMENT_"~!@_#$_%^_&*_()"/create_table_tableWithComment_(pk_int)_COMMENT_"~!@_#$_%^_&*_()"
+TestEngine/CreateTable/create_table_tableWithComment_(pk_int)_COMMENT_'Table_Comments_Work!'/create_table_tableWithComment_(pk_int)_COMMENT_'Table_Comments_Work!'
+TestEngine/CreateTable/event_contains_CREATE_TABLE_AS/CREATE_EVENT_foo_ON_SCHEDULE_EVERY_1_YEAR_DO_CREATE_TABLE_bar_AS_SELECT_1;
+TestEngine/CreateTable/trigger_contains_CREATE_TABLE_AS/CREATE_TRIGGER_foo_AFTER_UPDATE_ON_t_FOR_EACH_ROW_BEGIN_CREATE_TABLE_bar_AS_SELECT_1;_END;
+TestEngine/InsertInto/insert_queries/INSERT_INTO_mytable_(i,s)_values_(1,'hi')_ON_DUPLICATE_KEY_UPDATE_s=VALUES(s)
+TestEngine/InsertInto/insert_queries/INSERT_INTO_mytable_(i,s)_values_(1,'mar'),_(2,'par')_ON_DUPLICATE_KEY_UPDATE_s=CONCAT(VALUES(s),_'tial')
+TestEngine/InsertInto/insert_queries/INSERT_INTO_mytable_(i,s)_values_(1,'maybe')_ON_DUPLICATE_KEY_UPDATE_i=VALUES(i)+8000,_s=VALUES(s)
+TestEngine/InsertInto/insert_queries/INSERT_INTO_mytable_(i,s)_values_(1,_'hello')_ON_DUPLICATE_KEY_UPDATE_i=10
+TestEngine/InsertInto/insert_queries/INSERT_INTO_mytable_(i,s)_values_(1,_'hello')_ON_DUPLICATE_KEY_UPDATE_s='hello'
+TestEngine/InsertInto/insert_queries/INSERT_INTO_mytable_(i,s)_values_(1,_'hello2'),_(2,_'hello3'),_(4,_'no_conflict')_ON_DUPLICATE_KEY_UPDATE_s='hello4'
+TestEngine/InsertInto/insert_queries/INSERT_INTO_mytable_(i,s)_values_(1,_'hello2')_ON_DUPLICATE_KEY_UPDATE_s='hello3'
+TestEngine/InsertInto/insert_queries/INSERT_INTO_mytable_(i,s)_values_(1,_'hello2')_ON_DUPLICATE_KEY_UPDATE_s='hello3'#01
+TestEngine/InsertInto/insert_queries/INSERT_INTO_mytable_(i,s)_values_(10,_'hello')_ON_DUPLICATE_KEY_UPDATE_s='hello'
+TestEngine/InsertInto/insert_queries/INSERT_INTO_mytable_(s,i)_values_('dup',1)_ON_DUPLICATE_KEY_UPDATE_s=CONCAT(VALUES(s),_'licate')
+TestEngine/InsertInto/insert_queries/INSERT_INTO_othertable_VALUES_("fourth",_1)_ON_DUPLICATE_KEY_UPDATE_s2="fourth"
+TestEngine/InsertInto/insert_scripts/INSERT_IGNORE_works_with_FK_Violations
+TestEngine/InsertInto/insert_scripts/Insert_on_duplicate_key
+TestEngine/InsertInto/insert_scripts/issue_7322:_values_expression_is_subquery
+TestEngine/Queries
+TestEngine/Scripts/ALTER_AUTO_INCREMENT_TABLE_ADD_column/alter_table_test_add_column_j_int;
+TestEngine/Scripts/ALTER_TABLE,_ALTER_COLUMN_SET,_DROP_DEFAULT/ALTER_TABLE_test_ALTER_v1_DROP_DEFAULT;
+TestEngine/Scripts/ALTER_TABLE,_ALTER_COLUMN_SET,_DROP_DEFAULT/ALTER_TABLE_test_ALTER_v1_SET_DEFAULT_(CONVERT('42',_SIGNED));
+TestEngine/Scripts/ALTER_TABLE,_ALTER_COLUMN_SET,_DROP_DEFAULT/ALTER_TABLE_test_ALTER_v1_SET_DEFAULT_100,_alter_v1_DROP_DEFAULT
+TestEngine/Scripts/ALTER_TABLE,_ALTER_COLUMN_SET,_DROP_DEFAULT/ALTER_TABLE_test_ALTER_v1_SET_DEFAULT_100,_alter_v1_SET_DEFAULT_200
+TestEngine/Scripts/ALTER_TABLE,_ALTER_COLUMN_SET,_DROP_DEFAULT/DESCRIBE_test
+TestEngine/Scripts/ALTER_TABLE,_ALTER_COLUMN_SET,_DROP_DEFAULT/INSERT_INTO_test_(pk)_VALUES_(2);#01
+TestEngine/Scripts/ALTER_TABLE,_ALTER_COLUMN_SET,_DROP_DEFAULT/INSERT_INTO_test_(pk)_VALUES_(3);
+TestEngine/Scripts/ALTER_TABLE,_ALTER_COLUMN_SET,_DROP_DEFAULT/SELECT_*_FROM_test;#01
+TestEngine/Scripts/ALTER_TABLE,_ALTER_COLUMN_SET,_DROP_DEFAULT/SELECT_*_FROM_test;#02
+TestEngine/Scripts/ALTER_TABLE_MODIFY_column_with_multiple_KEYS
+TestEngine/Scripts/ALTER_TABLE_MODIFY_column_with_multiple_UNIQUE_KEYS
+TestEngine/Scripts/ALTER_TABLE_MULTI_ADD/DROP_COLUMN/ALTER_TABLE_TEST_MODIFY_COLUMN_pk_BIGINT_AUTO_INCREMENT,_AUTO_INCREMENT_=_100
+TestEngine/Scripts/ALTER_TABLE_MULTI_ADD/DROP_COLUMN/ALTER_TABLE_test_ADD_COLUMN_(v3_int_NOT_NULL),_add_column_(v4_int),_drop_column_v2,_add_column_(v5_int_NOT_NULL)
+TestEngine/Scripts/ALTER_TABLE_MULTI_ADD/DROP_COLUMN/ALTER_TABLE_test_ADD_COLUMN_(v6_int_not_null),_RENAME_COLUMN_v5_TO_mycol,_DROP_COLUMN_v4,_ADD_COLUMN_(v7_int);
+TestEngine/Scripts/ALTER_TABLE_MULTI_ADD/DROP_COLUMN/ALTER_TABLE_test_DROP_COLUMN_v1,_ADD_COLUMN_v2_INT_NOT_NULL_DEFAULT_100
+TestEngine/Scripts/ALTER_TABLE_MULTI_ADD/DROP_COLUMN/DESCRIBE_test
+TestEngine/Scripts/ALTER_TABLE_MULTI_ADD/DROP_COLUMN/INSERT_INTO_test_(v2)_values_(11)
+TestEngine/Scripts/ALTER_TABLE_MULTI_ADD/DROP_COLUMN/SELECT_*_from_test_where_pk_=_100
+TestEngine/Scripts/ALTER_TABLE_MULTI_ADD/DROP_COLUMN/describe_test
+TestEngine/Scripts/ALTER_TABLE_MULTI_ADD/DROP_COLUMN/describe_test#01
+TestEngine/Scripts/ALTER_TABLE_MULTI_ADD/DROP_COLUMN/describe_test#02
+TestEngine/Scripts/ALTER_TABLE_MULTI_ADD/DROP_COLUMN/describe_test#03
+TestEngine/Scripts/ALTER_TABLE_MULTI_ADD/DROP_COLUMN/describe_test#04
+TestEngine/Scripts/Check_support_for_deprecated_BINARY_attribute_after_character_set/ALTER_TABLE_test_CHANGE_v1_v2_VARCHAR(255)_CHARACTER_SET_utf8mb4_BINARY_NOT_NULL;
+TestEngine/Scripts/Check_support_for_deprecated_BINARY_attribute_after_character_set/SHOW_CREATE_TABLE_test;#01
+TestEngine/Scripts/Ensure_proper_DECIMAL_support_(found_by_fuzzer)
+TestEngine/Scripts/GMS_issue_2349
+TestEngine/Scripts/GMS_issue_2369
+TestEngine/Scripts/Multialter_DDL_with_ADD/DROP_INDEX/ALTER_TABLE_t_ADD_COLUMN_(v2_int),_ADD_INDEX_myidx_(v2)
+TestEngine/Scripts/Multialter_DDL_with_ADD/DROP_INDEX/ALTER_TABLE_t_ADD_COLUMN_(v4_int),_ADD_INDEX_myidx2_(v4)
+TestEngine/Scripts/Multialter_DDL_with_ADD/DROP_INDEX/ALTER_TABLE_t_ADD_COLUMN_(v5_int),_RENAME_INDEX_myidx2_TO_myidx3
+TestEngine/Scripts/Multialter_DDL_with_ADD/DROP_INDEX/ALTER_TABLE_t_DROP_INDEX_myidx,_ADD_INDEX_v5idx_(v5)
+TestEngine/Scripts/Multialter_DDL_with_ADD/DROP_INDEX/DESCRIBE_t#01
+TestEngine/Scripts/Multialter_DDL_with_ADD/DROP_INDEX/DESCRIBE_t#02
+TestEngine/Scripts/Multialter_DDL_with_ADD/DROP_INDEX/DESCRIBE_t#03
+TestEngine/Scripts/Multialter_DDL_with_ADD/DROP_INDEX/DESCRIBE_t#04
+TestEngine/Scripts/Multialter_DDL_with_ADD/DROP_INDEX/DESCRIBE_t#05
+TestEngine/Scripts/Multialter_DDL_with_ADD/DROP_INDEX/DESCRIBE_t#06
+TestEngine/Scripts/Multialter_DDL_with_ADD/DROP_Primary_Key/ALTER_TABLE_t_ADD_COLUMN_(v2_int),_drop_primary_key,_add_primary_key_(v2)
+TestEngine/Scripts/Multialter_DDL_with_ADD/DROP_Primary_Key/DESCRIBE_t
+TestEngine/Scripts/Multialter_DDL_with_ADD/DROP_Primary_Key/DESCRIBE_t#01
+TestEngine/Scripts/Nested_Subquery_projections_(NTC)
+TestEngine/Scripts/Querying_existing_view_that_references_non-existing_table
+TestEngine/Scripts/Show_create_table_with_various_keys_and_constraints
+TestEngine/Scripts/alter_json_column_default;_from_scorewarrior:_https://github.com/dolthub/dolt/issues/4543/alter_table_test_alter_column_j_set_default_('[]');
+TestEngine/Scripts/alter_json_column_default;_from_scorewarrior:_https://github.com/dolthub/dolt/issues/4543/show_create_table_test
+TestEngine/Scripts/alter_keyless_table/alter_table_t_add_column_new3_int;
+TestEngine/Scripts/alter_keyless_table/alter_table_t_drop_column_c1;
+TestEngine/Scripts/alter_keyless_table/alter_table_t_modify_column_c1_int_unsigned
+TestEngine/Scripts/alter_keyless_table/describe_t;
+TestEngine/Scripts/alter_keyless_table/describe_t;#01
+TestEngine/Scripts/alter_keyless_table/describe_t;#02
+TestEngine/Scripts/alter_keyless_table/insert_into_t_values_('two',_'two',_-2);
+TestEngine/Scripts/alter_keyless_table/select_*_from_t;
+TestEngine/Scripts/alter_nil_enum/alter_table_xy_modify_y_enum('a')
+TestEngine/Scripts/alter_nil_enum/alter_table_xy_modify_y_enum('a','b','c')
+TestEngine/Scripts/alter_table_out_of_range_value_error_of_column_type_change/alter_table_t_modify_column_i2_int_unsigned
+TestEngine/Scripts/division_and_int_division_operation_on_negative,_small_and_big_value_for_decimal_type_column_of_table
+TestEngine/Scripts/failed_statements_data_validation_for_DELETE,_REPLACE
+TestEngine/Scripts/failed_statements_data_validation_for_INSERT,_UPDATE/INSERT_INTO_test_VALUES_(2,2),_(3,3),_(1,1);
+TestEngine/Scripts/failed_statements_data_validation_for_INSERT,_UPDATE/UPDATE_test_SET_pk_=_pk_+_1_ORDER_BY_pk;
+TestEngine/Scripts/preserve_enums_through_alter_statements/alter_table_t_modify_column_e_enum('a',_'b',_'c');
+TestEngine/Scripts/preserve_enums_through_alter_statements/alter_table_t_modify_column_e_enum('abc');
+TestEngine/Scripts/preserve_enums_through_alter_statements/alter_table_t_modify_column_e_enum('asdf',_'a',_'b',_'c');
+TestEngine/Scripts/preserve_enums_through_alter_statements/alter_table_t_modify_column_e_enum('asdf',_'a',_'b',_'c',_'d');
+TestEngine/Scripts/preserve_enums_through_alter_statements/alter_table_t_modify_column_e_enum('c',_'a',_'b');
+TestEngine/Scripts/preserve_enums_through_alter_statements/select_i,_e,_e_+_0_from_t;#01
+TestEngine/Scripts/preserve_enums_through_alter_statements/select_i,_e,_e_+_0_from_t;#02
+TestEngine/Scripts/preserve_enums_through_alter_statements/select_i,_e,_e_+_0_from_t;#03
+TestEngine/Scripts/recreate_primary_key_rebuilds_secondary_indexes
+TestEngine/Scripts/renaming_views_with_ALTER_TABLE_..._RENAME_.._statement_should_fail/alter_table_v1_rename_to_view1
+TestEngine/Scripts/renaming_views_with_RENAME_TABLE_..._TO_.._statement/rename_table_v1_to_view1
+TestEngine/Scripts/renaming_views_with_RENAME_TABLE_..._TO_.._statement/rename_table_view1_to_newViewName,_t1_to_newTableName
+TestEngine/Scripts/renaming_views_with_RENAME_TABLE_..._TO_.._statement/show_tables;#01
+TestEngine/Scripts/renaming_views_with_RENAME_TABLE_..._TO_.._statement/show_tables;#02
+TestEngine/Scripts/resolve_foreign_key_on_indexed_update
+TestEngine/Scripts/row_count()_behavior/alter_table_b_add_column_y_int_null
+TestEngine/Scripts/row_count()_behavior/select_row_count()#08
+TestEngine/Scripts/sum()_and_avg()_on_DECIMAL_type_column_returns_the_DECIMAL_type_result/SELECT_val_FROM_decimal_table;
+TestEngine/Scripts/test_index_naming/show_create_table_tt
+TestEngine/Scripts/update_join_with_update_trigger
+TestEngine/Scripts/update_join_with_update_trigger_different_value
+TestEngine/Scripts/update_join_with_update_trigger_if_condition
+TestEngine/Scripts/update_join_with_update_trigger_same_value
+TestEngine/TransactionScripts/AUTO_INCREMENT_transactions_off//*_client_a_*/_INSERT_INTO_t2_values_(NULL,_3)
+TestEngine/TransactionScripts/AUTO_INCREMENT_transactions_off//*_client_a_*/_alter_table_t2_modify_column_x_int
+TestEngine/TransactionScripts/READ_ONLY_Transactions//*_client_a_*/_INSERT_INTO_tmp_VALUES_(1)
+TestEngine/TransactionScripts/READ_ONLY_Transactions//*_client_a_*/_alter_table_t2_add_val2_int
+TestEngine/TransactionScripts/READ_ONLY_Transactions//*_client_a_*/_create_temporary_table_tmp(pk_int_primary_key)
+TestEngine/TransactionScripts/READ_ONLY_Transactions//*_client_a_*/_select_*_from_t2
+TestEngine/TransactionScripts/READ_ONLY_Transactions//*_client_b_*/_SELECT_*_FROM_t2
+TestEngine/TransactionScripts/Test_AUTO_INCREMENT_with_no_autocommit//*_client_a_*/_select_*_from_t2_order_by_x#04
+TestEngine/TransactionScripts/Test_AUTO_INCREMENT_with_no_autocommit//*_client_a_*/_select_*_from_t_order_by_x#01
+TestEngine/TransactionScripts/Test_AUTO_INCREMENT_with_no_autocommit//*_client_a_*/_select_*_from_t_order_by_x#02
+TestEngine/TransactionScripts/Test_AUTO_INCREMENT_with_no_autocommit//*_client_a_*/_select_*_from_t_order_by_x#03
+TestEngine/TransactionScripts/Test_AUTO_INCREMENT_with_no_autocommit//*_client_a_*/_select_*_from_t_order_by_x#04
+TestEngine/TransactionScripts/Test_AUTO_INCREMENT_with_no_autocommit//*_client_a_*/_select_*_from_t_order_by_x#05
+TestEngine/TransactionScripts/Test_AUTO_INCREMENT_with_no_autocommit//*_client_a_*/_select_*_from_t_order_by_x#06
+TestEngine/TransactionScripts/Test_AUTO_INCREMENT_with_no_autocommit//*_client_b_*/_commit
+TestEngine/TransactionScripts/Test_AUTO_INCREMENT_with_no_autocommit//*_client_b_*/_commit#01
+TestEngine/TransactionScripts/Test_AUTO_INCREMENT_with_no_autocommit//*_client_b_*/_select_*_from_t2_order_by_x#03
+TestEngine/TransactionScripts/Test_AUTO_INCREMENT_with_no_autocommit//*_client_b_*/_select_*_from_t2_order_by_x#04
+TestEngine/TransactionScripts/Test_AUTO_INCREMENT_with_no_autocommit//*_client_b_*/_select_*_from_t_order_by_x#02
+TestEngine/TransactionScripts/Test_AUTO_INCREMENT_with_no_autocommit//*_client_b_*/_select_*_from_t_order_by_x#03
+TestEngine/TransactionScripts/Test_AUTO_INCREMENT_with_no_autocommit//*_client_b_*/_select_*_from_t_order_by_x#04
+TestEngine/TransactionScripts/Test_AUTO_INCREMENT_with_no_autocommit//*_client_b_*/_select_*_from_t_order_by_x#05
+TestEngine/TransactionScripts/Test_AUTO_INCREMENT_with_no_autocommit//*_client_c_*/_commit
+TestEngine/TransactionScripts/Test_AUTO_INCREMENT_with_no_autocommit//*_client_c_*/_commit#01
+TestEngine/TransactionScripts/Test_AUTO_INCREMENT_with_no_autocommit//*_client_c_*/_select_*_from_t2_order_by_x#04
+TestEngine/TransactionScripts/Test_AUTO_INCREMENT_with_no_autocommit//*_client_c_*/_select_*_from_t_order_by_x#03
+TestEngine/TransactionScripts/Test_AUTO_INCREMENT_with_no_autocommit//*_client_c_*/_select_*_from_t_order_by_x#04
+TestEngine/TransactionScripts/Test_AUTO_INCREMENT_with_no_autocommit//*_client_c_*/_select_*_from_t_order_by_x#05
+TestEngine/TransactionScripts/alter_table_queries_are_implicitly_committed//*_client_a_*/_alter_table_t_add_column_i_int;
+TestEngine/TransactionScripts/alter_table_queries_are_implicitly_committed//*_client_b_*/_show_create_table_t;#01
+TestEngine/TransactionScripts/autocommit_off//*_client_a_*/_commit
+TestEngine/TransactionScripts/autocommit_off//*_client_a_*/_select_*_from_t_order_by_x#02
+TestEngine/TransactionScripts/autocommit_off//*_client_b_*/_select_*_from_t_order_by_x#04
+TestEngine/TransactionScripts/certain_ddl_queries_on_temporary_tables_are_not_implicitly_committed//*_client_a_*/_create_temporary_table_tmp_(pk_int_primary_key);
+TestEngine/TransactionScripts/certain_ddl_queries_on_temporary_tables_are_not_implicitly_committed//*_client_a_*/_create_temporary_table_tmp_(pk_int_primary_key);#01
+TestEngine/TransactionScripts/certain_ddl_queries_on_temporary_tables_are_not_implicitly_committed//*_client_a_*/_create_temporary_table_tmp_(pk_int_primary_key);#02
+TestEngine/TransactionScripts/certain_ddl_queries_on_temporary_tables_are_not_implicitly_committed//*_client_a_*/_drop_table_tmp;
+TestEngine/TransactionScripts/certain_ddl_queries_on_temporary_tables_are_not_implicitly_committed//*_client_a_*/_drop_temporary_table_tmp;
+TestEngine/TransactionScripts/certain_ddl_queries_on_temporary_tables_are_not_implicitly_committed//*_client_a_*/_insert_into_tmp_values_(1),_(2),_(3);
+TestEngine/TransactionScripts/certain_ddl_queries_on_temporary_tables_are_not_implicitly_committed//*_client_b_*/_select_*_from_t;#05
+TestEngine/TransactionScripts/create_procedure_queries_are_implicitly_committed#01//*_client_a_*/_create_event_e_on_schedule_every_1_second_starts_'2025-01-01'_do_begin_select_1;_end;
+TestEngine/TransactionScripts/create_procedure_queries_are_implicitly_committed#01//*_client_b_*/_show_create_event_e;
+TestEngine/TransactionScripts/create_procedure_queries_are_implicitly_committed//*_client_a_*/_create_procedure_p()_begin_select_1;_end;
+TestEngine/TransactionScripts/create_procedure_queries_are_implicitly_committed//*_client_b_*/_show_create_procedure_p;
+TestEngine/TransactionScripts/create_trigger_queries_are_implicitly_committed//*_client_a_*/_create_trigger_trig_before_insert_on_t_for_each_row_set_i_=_0;
+TestEngine/TransactionScripts/create_trigger_queries_are_implicitly_committed//*_client_b_*/_select_trigger_schema,_trigger_name_from_information_schema.triggers_where_trigger_name_=_'trig';
+TestEngine/Truncate/Foreign_Key_References
+TestEngine/Truncate/Naked_DELETE_with_Foreign_Key_References
+TestEngine/Truncate/Naked_DELETE_with_ON_DELETE_Triggers
+TestEngine/Truncate/ON_DELETE_Triggers
