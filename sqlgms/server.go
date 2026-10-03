@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"time"
 
 	sqle "github.com/dolthub/go-mysql-server"
 	"github.com/dolthub/go-mysql-server/server"
@@ -27,6 +28,9 @@ type ServerConfig struct {
 	// and catalog changes in a statement log, both under Dir.
 	Dir    string
 	NoSync bool // acknowledge commits before they sync
+	// CommitDelay holds each sync open that long so concurrent commits
+	// share it.
+	CommitDelay time.Duration
 }
 
 // Server is a running MySQL-protocol server.
@@ -41,6 +45,9 @@ type Server struct {
 // Serve opens the store, recovers it when durable, and starts listening.
 func Serve(cfg ServerConfig) (*Server, error) {
 	opts := txn.Options{Mode: cfg.Mode, BucketBits: cfg.BucketBits, NoSync: cfg.NoSync}
+	if cfg.CommitDelay > 0 {
+		opts.CommitDelay = func() { time.Sleep(cfg.CommitDelay) }
+	}
 	s := &Server{}
 	if cfg.Dir != "" {
 		st, err := badger.Open(filepath.Join(cfg.Dir, "data"))

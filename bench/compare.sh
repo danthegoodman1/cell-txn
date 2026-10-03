@@ -3,9 +3,11 @@
 # cell-tnx in every mode, appending to a CSV.
 # Usage: bench/compare.sh out.csv [duration] [durable: 0|1]
 # ONLY=mysql or ONLY=ours runs one side. PREPARE=1 sends statements as
-# server-side prepared statements and adds -prep to each label. Durable
-# runs keep cell-tnx's data under $DATA_DIR (default .benchdata), which
-# must share a disk with MySQL's data: on tmpfs an fsync costs nothing.
+# server-side prepared statements and adds -prep to each label.
+# SERVER_ARGS adds flags to cell-tnx's server, e.g. -commitdelay=500us.
+# Durable runs keep cell-tnx's data under $DATA_DIR (default .benchdata),
+# which must share a disk with MySQL's data: on tmpfs an fsync costs
+# nothing.
 # Expects MySQL 8 at $MYSQL_DSN (default root@tcp(127.0.0.1:3308)/), on the
 # host network so both servers sit behind the same loopback interface:
 #   docker run -d --name celltnx-mysql --network host \
@@ -64,7 +66,7 @@ for mode in row cell cell+delta; do
 		mkdir -p "$data_dir/$mode"
 		args+=(-dir "$data_dir/$mode")
 	fi
-	"$bin/server" "${args[@]}" >/dev/null 2>&1 &
+	"$bin/server" "${args[@]}" ${SERVER_ARGS:-} >/dev/null 2>&1 &
 	pid=$!
 	sleep 1
 	runs "$ours_dsn" "cell-tnx-$mode"

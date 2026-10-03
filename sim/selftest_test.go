@@ -19,7 +19,7 @@ func TestSelfTest(t *testing.T) {
 		}
 		found := false
 		for seed := range uint64(30000) {
-			if r := Run(seed, Config{Mode: -1, Durable: -1, NoInvariants: true}); r.Err != nil {
+			if r := Run(seed, Config{Mode: -1, Durable: -1, CommitDelay: -1, NoInvariants: true}); r.Err != nil {
 				t.Logf("%s: found at seed %d: %.120s", bug, seed, r.Err)
 				found = true
 				break

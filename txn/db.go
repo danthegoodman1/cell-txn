@@ -112,6 +112,10 @@ type Options struct {
 	// NoSync is set.
 	Store  Store
 	NoSync bool
+	// CommitDelay, when set, runs on the writer before each flush. Hosts
+	// sleep there, so commits arriving meanwhile share the sync: it trades
+	// that much commit latency for fewer syncs.
+	CommitDelay func()
 	// Wait, when set, replaces blocking waits: it must return once cond
 	// holds. The simulator uses it to yield instead of block.
 	Wait func(cond func() bool)

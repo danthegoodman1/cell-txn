@@ -8,13 +8,13 @@ Measured 2026-10-03 on one 24-core Linux machine with NVMe storage (ext4). Clien
 |---|---|---|
 | Unit and scenario tests | spec scenarios 1–9, indexes, savepoints, GC, overflow, SQL scenarios, durable restart | pass under `-race` |
 | Stress tests | every workload on real goroutines, all modes, full history replay | pass under `-race` |
-| Core simulation | 30,000 seeds, every workload, mode and disk setting; 303,745 crashes with recovery checks | 0 failures |
-| Per-workload simulation | 30,000 seeds each for random, users and TPC-C; 1,097,006 crashes | 0 failures |
+| Core simulation | 30,000 seeds, every workload, mode, disk setting and commit delay; 368,498 crashes with recovery checks | 0 failures |
+| Per-workload simulation | 30,000 seeds each for random, users and TPC-C; 1,375,667 crashes | 0 failures |
 | SQL simulation | 30,000 seeds through go-mysql-server, replayed against its reference engine; 212,472 conflict retries | 0 failures |
 | Determinism | every tenth seed rerun in every sweep (15,000 reruns) | 0 mismatches |
-| Self-test | 10 deliberate bugs, internal assertions off | all found, by seed 747 at the latest |
+| Self-test | 11 deliberate bugs, internal assertions off | all found, by seed 747 at the latest |
 | Race detector | 1,000 parallel SQL seeds in a `-race` build | no races |
-| Crash test | 8 rounds of `kill -9` during TPC-C on one Badger store, about 22,600 commits | no acknowledged commit lost; recovered state equals the serial replay |
+| Crash test | 8 rounds of `kill -9` during TPC-C on one Badger store, half with a 500µs commit delay; about 21,300 commits | no acknowledged commit lost; recovered state equals the serial replay |
 | go-mysql-server engine tests | 14 suites | 1,740 pass, 162 fail, 36 skip; see `sqlgms/enginetest.txt` |
 
 The engine-test failures are features outside the prototype (ALTER TABLE, foreign keys, triggers, temporary tables, prefix indexes, events and procedures), metadata display (DESCRIBE and SHOW CREATE TABLE), LAST_INSERT_ID reporting after ON DUPLICATE KEY UPDATE, and transaction scripts that expect REPEATABLE READ outcomes where SERIALIZABLE must abort one writer.
@@ -62,6 +62,21 @@ Identical SQL from `cmd/sqlbench`, 32 clients; commits/s, with retries per trans
 | users, θ=0.99, 50% disjoint | 3,188 | 3,389 | 4,543 | 5,598 | 5,636 |
 | users, θ=0.99, 90% disjoint | 3,399 | 3,422 | 6,187 | 6,367 | 6,488 |
 
+### Commit delay
+
+`-commitdelay` makes the writer sleep before each flush, so commits arriving meanwhile share its sync. cell+delta with fsync per commit; commits/s, the change from no delay, and p50 and p99 commit latency in ms.
+
+| Commit delay | users, θ=0.5, 50% disjoint | TPC-C, 1 warehouse | TPC-C, 4 warehouses |
+|---|---|---|---|
+| none | 5,883; p50 4.7, p99 11 | 1,979; p50 9.3, p99 115 | 3,132; p50 9.4, p99 28 |
+| 100 µs | 5,742 (−2%); p50 4.9, p99 11 | 2,111 (+7%); p50 9.6, p99 95 | 3,164 (+1%); p50 9.7, p99 27 |
+| 250 µs | 6,331 (+8%); p50 5.0, p99 11 | 2,083 (+5%); p50 10.0, p99 97 | 3,108 (−1%); p50 9.6, p99 27 |
+| 500 µs | 7,684 (+31%); p50 3.0, p99 11 | 2,168 (+10%); p50 9.8, p99 87 | 2,996 (−4%); p50 9.0, p99 26 |
+| 750 µs | 7,324 (+24%); p50 3.6, p99 11 | 2,105 (+6%); p50 9.9, p99 88 | 2,871 (−8%); p50 9.7, p99 28 |
+| 1 ms | 6,522 (+11%); p50 4.4, p99 12 | 2,034 (+3%); p50 10.4, p99 95 | 2,799 (−11%); p50 10.4, p99 30 |
+
+A Badger write and sync takes about 2.4 ms here, and the writer syncs almost continuously. Without a delay, users commits split into two alternating groups: a client commits again about 0.1 ms after its last commit returns, just after the next sync has started, so each commit waits through about two syncs. A 500 µs delay merges the groups, raising throughput by 31% and cutting p50 latency from 4.7 to 3.0 ms. TPC-C transactions spend about 7 ms in SQL, so their commits arrive spread out: a delay gains up to 10% at 1 warehouse, where it also trims retries and p99 latency, and costs throughput at 4 warehouses beyond 100 µs. The delay is off by default.
+
 ### Prepared statements
 
 With `PREPARE=1`, every statement with arguments goes as a server-side prepared statement. Both servers then skip parsing; go-mysql-server still rebuilds and analyzes the plan on every execution. No per-commit fsync; commits/s.
@@ -93,7 +108,7 @@ Mutex contention sits in go-mysql-server's global process list, which every stat
 - **Against MySQL SERIALIZABLE, cell+delta wins everywhere except hot read-modify-write without fsync.** Without fsync it does 1.2× MySQL on TPC-C at 1 warehouse, matches it at 4, and beats it by 1.6–2.6× on users updates that touch disjoint columns. With fsync on both sides it wins TPC-C by 1.6× and users by 1.8–1.9×. With 1 ms between statements, MySQL holds its locks across the pauses and cell+delta does 2.7–2.9× its throughput. MySQL REPEATABLE READ, a weaker level, still wins TPC-C at 4 warehouses without fsync.
 - **Over SQL, go-mysql-server's per-statement cost bounds throughput.** TPC-C peaks near 3,600 commits/s over SQL (4,400 with prepared statements) against 43,000–53,000 in process. Parsing, planning and analysis take about 40% of the server's CPU; the commit takes 1–2%. The server is not CPU-saturated on TPC-C: each client runs its statements one at a time, so per-statement latency sets the rate.
 - **Hot read-modify-write is OCC's weak spot.** When most traffic hits one row and transactions read and rewrite the same column (users at θ=0.99 with 0% disjoint), every mode retries and MySQL's locking does slightly better without fsync. NewOrder's `D_NEXT_O_ID` increment is the same pattern and accounts for most of cell+delta's remaining TPC-C retries.
-- **With fsync, cell-tnx commits users updates at about 5,900/s against MySQL's 3,300.** The single writer covers every queued commit with one sync, and a commit's p50 latency is 4.7 ms against MySQL's 8.1 ms.
+- **With fsync, cell-tnx commits users updates at about 5,900/s against MySQL's 3,300.** The single writer covers every queued commit with one sync, and a commit's p50 latency is 4.7 ms against MySQL's 8.1 ms. A 500 µs commit delay raises that to 7,700/s at 3.0 ms; it suits short transactions and is tuned per workload.
 
 ## Reproducing
 
@@ -105,4 +120,5 @@ bench/enginetest.sh
 go run ./cmd/bench -workload tpcc -warehouses 1 -think 0.5 -clients 16
 bench/compare.sh out.csv 8s 0 && bench/compare.sh out.csv 8s 1
 PREPARE=1 bench/compare.sh out.csv 8s 0
+SERVER_ARGS=-commitdelay=500us ONLY=ours bench/compare.sh out.csv 8s 1
 ```

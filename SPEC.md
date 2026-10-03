@@ -132,7 +132,7 @@ Semantics:
 - **Active snapshots:** `Begin` loads `lastCommitTs` and registers its `readTs` under one mutex, which GC also takes to compute the oldest `readTs`. GC therefore never trims a version a starting transaction needs.
 
 ## Durability
-- **Writer:** the host runs `RunWriter` on a goroutine; the simulator runs it as a coroutine. It takes every queued commit, writes the batch, syncs it, and advances `durableTs` (group commit). A write or sync error is permanent: the DB stops acknowledging and the process must restart and recover.
+- **Writer:** the host runs `RunWriter` on a goroutine; the simulator runs it as a coroutine. It takes every queued commit, writes the batch, syncs it, and advances `durableTs` to the batch's newest commit (group commit). With a commit delay, it first sleeps that long after finding work, so commits arriving meanwhile join the batch; this trades up to the delay in commit latency for fewer syncs. The host supplies the sleep, so the core stays free of wall-clock time. A write or sync error is permanent: the DB stops acknowledging and the process must restart and recover.
 - **Store contract:** a crash may lose a suffix of the commits written since the last sync, but never part of a commit or a commit before a surviving one.
 - **Badger:** each commit is one managed transaction committed with `CommitAt(commitTs)`, submitted in order with asynchronous callbacks; `Sync` follows, then `SetDiscardTs`. Badger applies a transaction atomically and writes its log in submission order, which gives the contract; the `kill -9` test checks it.
 - **Recovery:** `Recover` loads the newest image of every row as of the store's last commit, rebuilds index entries from the rows, and resumes auto-increment counters past their largest values. Every transaction begins after recovery, so no earlier history is needed.
@@ -159,7 +159,7 @@ The simulator (`cmd/sim`) runs the whole system on one goroutine from a single s
 - mode, workload, transaction mix and secondary indexes;
 - client count, quota, key-space size, bucket width and θ;
 - think time, scheduler skew and the share of long-running readers;
-- whether a simulated disk is attached, sync or not, its sync latency, and the probabilities of crashes and sync failures.
+- whether a simulated disk is attached, sync or not, its sync latency, the writer's commit delay, and the probabilities of crashes and sync failures. The commit delay comes from its own random stream, so a sweep with `-commitdelay 0` reproduces every other parameter.
 
 Small key spaces and narrow buckets force contention.
 
@@ -201,7 +201,8 @@ A crash stops every coroutine, keeps the disk's synced commits plus a random pre
 - a unique-key claim records no read of the entry;
 - an index scan records no buckets;
 - a commit is acknowledged before its sync;
-- a read-only commit skips its durability wait.
+- a read-only commit skips its durability wait;
+- a flush acknowledges commits that joined the queue during its sync.
 
 **SQL simulation.** `sim -workload sql` runs random SQL transactions through go-mysql-server and the store, with the clients as coroutines and no wire protocol.
 - Statements cover point, range and secondary-index reads, aggregates, joins, a correlated subquery, deltas over one and many rows, blind and indexed writes, unique-key collisions, `INSERT … ON DUPLICATE KEY UPDATE`, `REPLACE`, single and range deletes, explicit and autocommit transactions, and rollbacks.

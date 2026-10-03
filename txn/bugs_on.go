@@ -17,6 +17,7 @@ var (
 	bugIndexNoRange       bool // an index scan records no buckets
 	bugAckBeforeSync      bool // commits are acknowledged before they sync
 	bugReadOnlyNoWait     bool // read-only commits skip the durability wait
+	bugAckJoined          bool // a flush acknowledges commits queued during its sync
 )
 
 var bugFlags = map[string]*bool{
@@ -30,10 +31,11 @@ var bugFlags = map[string]*bool{
 	"index-no-range":       &bugIndexNoRange,
 	"ack-before-sync":      &bugAckBeforeSync,
 	"read-only-no-wait":    &bugReadOnlyNoWait,
+	"ack-joined":           &bugAckJoined,
 }
 
 // Bugs lists the deliberate bugs SetBug accepts.
-var Bugs = []string{"skip-buckets", "set-no-exists", "gc-eager", "check-skip-delta", "no-absent-read", "delta-read-untracked", "unique-no-read", "index-no-range", "ack-before-sync", "read-only-no-wait"}
+var Bugs = []string{"skip-buckets", "set-no-exists", "gc-eager", "check-skip-delta", "no-absent-read", "delta-read-untracked", "unique-no-read", "index-no-range", "ack-before-sync", "read-only-no-wait", "ack-joined"}
 
 // SetBug enables a deliberate bug for the whole process.
 func SetBug(name string) error {

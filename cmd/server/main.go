@@ -1,6 +1,6 @@
 // Command server serves cell-tnx over the MySQL protocol.
 //
-//	server -addr 127.0.0.1:3307 -mode cell+delta -dir ./data [-pprof 127.0.0.1:6060]
+//	server -addr 127.0.0.1:3307 -mode cell+delta -dir ./data [-commitdelay 500us] [-pprof 127.0.0.1:6060]
 package main
 
 import (
@@ -27,6 +27,7 @@ func main() {
 	bucketBits := flag.Uint("bucketbits", 4, "low key bits each bucket covers")
 	dir := flag.String("dir", "", "data directory; empty keeps everything in memory")
 	nosync := flag.Bool("nosync", false, "acknowledge commits before they sync")
+	commitDelay := flag.Duration("commitdelay", 0, "wait this long before each sync so concurrent commits share it")
 	pprofAddr := flag.String("pprof", "", "serve net/http/pprof on this address, with mutex sampling, e.g. 127.0.0.1:6060")
 	flag.Parse()
 	if *pprofAddr != "" {
@@ -43,7 +44,7 @@ func main() {
 		fmt.Fprintln(os.Stderr, "unknown mode", *mode)
 		os.Exit(2)
 	}
-	s, err := sqlgms.Serve(sqlgms.ServerConfig{Addr: *addr, Mode: m, BucketBits: *bucketBits, Dir: *dir, NoSync: *nosync})
+	s, err := sqlgms.Serve(sqlgms.ServerConfig{Addr: *addr, Mode: m, BucketBits: *bucketBits, Dir: *dir, NoSync: *nosync, CommitDelay: *commitDelay})
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)

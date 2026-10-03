@@ -23,31 +23,33 @@ type Config struct {
 	Workload     string // "random", "users", "tpcc" or "sql"; empty draws one of the first three
 	Mode         int    // a txn.Mode; negative draws one
 	Durable      int    // 1 forces a store, 0 forbids one, negative draws
+	CommitDelay  int64  // the writer's delay in steps; negative draws one
 	NoInvariants bool   // skip internal invariant checks
 	MaxSteps     int    // liveness bound; zero uses a default
 }
 
 // Params are a seed's drawn parameters.
 type Params struct {
-	Mode       txn.Mode
-	Workload   string
-	Clients    int
-	Quota      int
-	BucketBits uint
-	Skew       bool // clients get unequal scheduling weights
-	Durable    bool
-	NoSync     bool    // acknowledge commits before they sync
-	CrashP     float64 // per-step crash chance
-	SyncFailP  float64 // per-sync failure chance; a failure crashes
-	Latency    int64   // max sync time in steps
-	Detail     string  // workload configuration
+	Mode        txn.Mode
+	Workload    string
+	Clients     int
+	Quota       int
+	BucketBits  uint
+	Skew        bool // clients get unequal scheduling weights
+	Durable     bool
+	NoSync      bool    // acknowledge commits before they sync
+	CrashP      float64 // per-step crash chance
+	SyncFailP   float64 // per-sync failure chance; a failure crashes
+	Latency     int64   // max sync time in steps
+	CommitDelay int64   // the writer's wait before each flush, in steps
+	Detail      string  // workload configuration
 }
 
 func (p Params) String() string {
 	s := fmt.Sprintf("mode=%s workload=%s clients=%d quota=%d bucketBits=%d skew=%v",
 		p.Mode, p.Workload, p.Clients, p.Quota, p.BucketBits, p.Skew)
 	if p.Durable {
-		s += fmt.Sprintf(" durable nosync=%v crashP=%g syncFailP=%g latency=%d", p.NoSync, p.CrashP, p.SyncFailP, p.Latency)
+		s += fmt.Sprintf(" durable nosync=%v crashP=%g syncFailP=%g latency=%d commitDelay=%d", p.NoSync, p.CrashP, p.SyncFailP, p.Latency, p.CommitDelay)
 	}
 	return s + " " + p.Detail
 }
@@ -136,7 +138,7 @@ func (e env) Sleep(ticks int64) {
 	}
 }
 
-func draw(r *rand.Rand, cfg Config) (Params, workload.Workload) {
+func draw(seed uint64, r *rand.Rand, cfg Config) (Params, workload.Workload) {
 	p := Params{
 		Mode:       txn.Mode(r.IntN(3)),
 		Clients:    1 + r.IntN(16),
@@ -156,6 +158,12 @@ func draw(r *rand.Rand, cfg Config) (Params, workload.Workload) {
 		p.CrashP = [...]float64{0, 0.0005, 0.002, 0.01}[r.IntN(4)]
 		p.SyncFailP = [...]float64{0, 0, 0.001, 0.01}[r.IntN(4)]
 		p.Latency = [...]int64{0, 5, 50}[r.IntN(3)]
+		// A separate stream leaves every other parameter as before.
+		g := rand.New(rand.NewPCG(seed, 0xbb67ae8584caa73b))
+		p.CommitDelay = [...]int64{0, 0, 0, 2, 10, 50, 200}[g.IntN(7)]
+		if cfg.CommitDelay >= 0 {
+			p.CommitDelay = cfg.CommitDelay
+		}
 	}
 	p.Workload = cfg.Workload
 	if p.Workload == "" {
@@ -183,7 +191,7 @@ func Run(seed uint64, cfg Config) (res Result) {
 	}
 	res.Seed = seed
 	r := rand.New(rand.NewPCG(seed, 0x9e3779b97f4a7c15))
-	p, w := draw(r, cfg)
+	p, w := draw(seed, r, cfg)
 	res.Params = p
 	maxSteps := cfg.MaxSteps
 	if maxSteps == 0 {
@@ -199,6 +207,9 @@ func Run(seed uint64, cfg Config) (res Result) {
 		o := txn.Options{Mode: p.Mode, BucketBits: p.BucketBits, Yield: s.Yield, Wait: s.Wait, NoInvariants: cfg.NoInvariants}
 		if p.Durable {
 			o.Store, o.NoSync = d, p.NoSync
+			if p.CommitDelay > 0 {
+				o.CommitDelay = func() { env{s}.Sleep(p.CommitDelay) }
+			}
 		}
 		return txn.Open(o, schemas...)
 	}

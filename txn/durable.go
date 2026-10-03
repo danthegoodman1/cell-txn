@@ -130,16 +130,23 @@ func (db *DB) Flush() error {
 		d.err = err
 	} else {
 		d.durable = batch[len(batch)-1].Ts
+		if bugAckJoined && len(d.queue) > 0 {
+			d.durable = d.queue[len(d.queue)-1].Ts
+		}
 	}
 	d.mu.Unlock()
 	d.cond.Broadcast()
 	return err
 }
 
-// RunWriter flushes until the DB closes or a flush fails. Hosts run it on
-// its own goroutine; the simulator runs it as a coroutine.
+// RunWriter flushes until the DB closes or a flush fails, calling
+// CommitDelay before each flush. Hosts run it on its own goroutine; the
+// simulator runs it as a coroutine.
 func (db *DB) RunWriter() error {
 	for db.WaitWork() {
+		if db.opts.CommitDelay != nil {
+			db.opts.CommitDelay()
+		}
 		if err := db.Flush(); err != nil {
 			return err
 		}

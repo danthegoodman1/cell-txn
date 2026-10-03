@@ -59,7 +59,8 @@ func TestCrash(t *testing.T) {
 			t.Fatal(err)
 		}
 		cmd := exec.Command(os.Args[0], "-test.run=^TestCrashChild$")
-		cmd.Env = append(os.Environ(), "CRASH_DIR="+dir)
+		// Odd rounds hold each sync open, so batches gather commits.
+		cmd.Env = append(os.Environ(), "CRASH_DIR="+dir, "CRASH_COMMIT_DELAY="+[...]string{"0", "500us"}[round%2])
 		cmd.ExtraFiles = []*os.File{pw}
 		cmd.Stderr = os.Stderr
 		if err := cmd.Start(); err != nil {
@@ -140,7 +141,15 @@ func TestCrashChild(t *testing.T) {
 		t.Fatal(err)
 	}
 	w := crashWorkload()
-	db := txn.Open(txn.Options{Mode: txn.CellDelta, BucketBits: 2, Store: st}, w.Schemas()...)
+	delay, err := time.ParseDuration(os.Getenv("CRASH_COMMIT_DELAY"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	opts := txn.Options{Mode: txn.CellDelta, BucketBits: 2, Store: st}
+	if delay > 0 {
+		opts.CommitDelay = func() { time.Sleep(delay) }
+	}
+	db := txn.Open(opts, w.Schemas()...)
 	if err := db.Recover(st.Last(), st.Load); err != nil {
 		t.Fatal(err)
 	}
