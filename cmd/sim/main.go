@@ -34,11 +34,12 @@ func main() {
 	mode := flag.Int("mode", -1, "0=row 1=cell 2=cell+delta (default: drawn per seed)")
 	durable := flag.Int("durable", -1, "1 forces a simulated disk with crashes, 0 forbids one (default: drawn per seed)")
 	commitDelay := flag.Int64("commitdelay", -1, "the writer's delay before each flush, in steps (default: drawn per seed)")
+	interleave := flag.Float64("interleave", -1, "chance of switching at each fine-grained interleave point (default: drawn per seed)")
 	bug := flag.String("bug", "", "enable a deliberate bug; the sweep must find it")
 	det := flag.Int("det", 10, "rerun every Nth seed to check determinism (0 disables)")
 	flag.Parse()
 
-	cfg := sim.Config{Workload: *wl, Mode: *mode, Durable: *durable, CommitDelay: *commitDelay}
+	cfg := sim.Config{Workload: *wl, Mode: *mode, Durable: *durable, CommitDelay: *commitDelay, Interleave: *interleave}
 	if *bug != "" {
 		if err := txn.SetBug(*bug); err != nil {
 			fmt.Fprintln(os.Stderr, err)

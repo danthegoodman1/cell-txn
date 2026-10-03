@@ -173,11 +173,11 @@ func (db *DB) Recover(last uint64, load func(put func(tbl int, key string, row [
 	err := load(func(tbl int, key string, row []Value) {
 		t := db.table(tbl)
 		v := &version{ts: last, mask: t.all | Exists, row: row}
-		t.rows.getOrInsert(key).val.head.Store(v)
+		t.rows.getOrInsert(key, nil).val.head.Store(v)
 		for _, ix := range t.indexes() {
 			k, _ := ix.entryKey(row, key)
 			e := &version{ts: last, mask: ix.tbl.all | Exists, row: []Value{key}}
-			ix.tbl.rows.getOrInsert(k).val.head.Store(e)
+			ix.tbl.rows.getOrInsert(k, nil).val.head.Store(e)
 		}
 		if len(key) == 8 {
 			if id := uint64(key[0])<<56 | uint64(key[1])<<48 | uint64(key[2])<<40 | uint64(key[3])<<32 |

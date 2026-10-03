@@ -47,17 +47,17 @@ func (t *Txn) Install() error {
 	if timed {
 		t0 = db.opts.Now()
 	}
-	db.mu.Lock()
+	db.lock()
 	if timed {
 		t1 = db.opts.Now()
 	}
 	err := t.commitLocked(ws)
 	if timed {
 		t2 := db.opts.Now()
-		db.mu.Unlock()
+		db.unlock()
 		db.opts.OnCommit(t1-t0, t2-t1)
 	} else {
-		db.mu.Unlock()
+		db.unlock()
 	}
 	return err
 }
@@ -134,18 +134,23 @@ func (t *Txn) commitLocked(ws []wslot) error {
 		}
 		db.enqueue(c)
 	}
+	if bugPublishEarly {
+		db.last.Store(ts)
+	}
 	for _, in := range ins {
+		db.interleave()
 		n := in.n
 		if n == nil {
-			n = in.tb.rows.getOrInsert(in.key)
+			n = in.tb.rows.getOrInsert(in.key, db.opts.Interleave)
 		}
 		in.v.next.Store(n.val.head.Load())
 		n.val.head.Store(in.v)
 		trim(in.v, horizon)
 		if in.bucket {
-			in.tb.buckets.getOrInsert(in.tb.bucketOf(in.key, db.opts.BucketBits)).val = ts
+			in.tb.buckets.getOrInsert(in.tb.bucketOf(in.key, db.opts.BucketBits), nil).val = ts
 		}
 	}
+	db.interleave()
 	db.last.Store(ts)
 	t.serial = ts
 	return nil

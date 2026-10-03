@@ -16,7 +16,7 @@ func TestSkiplistConcurrentGet(t *testing.T) {
 		s := newSkiplist[int]()
 		const n = 1 << 18
 		for i := uint64(0); i < n; i += 2 {
-			s.getOrInsert(key(i))
+			s.getOrInsert(key(i), nil)
 		}
 		var pos atomic.Uint64 // the odd key the writer inserts next
 		pos.Store(1)
@@ -35,7 +35,7 @@ func TestSkiplistConcurrentGet(t *testing.T) {
 		}
 		for i := uint64(1); i < n; i += 2 {
 			pos.Store(i)
-			s.getOrInsert(key(i))
+			s.getOrInsert(key(i), nil)
 		}
 		done.Store(true)
 		wg.Wait()

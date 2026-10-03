@@ -20,12 +20,13 @@ import (
 
 // Config fixes parts of the drawn parameters.
 type Config struct {
-	Workload     string // "random", "users", "tpcc" or "sql"; empty draws one of the first three
-	Mode         int    // a txn.Mode; negative draws one
-	Durable      int    // 1 forces a store, 0 forbids one, negative draws
-	CommitDelay  int64  // the writer's delay in steps; negative draws one
-	NoInvariants bool   // skip internal invariant checks
-	MaxSteps     int    // liveness bound; zero uses a default
+	Workload     string  // "random", "users", "tpcc" or "sql"; empty draws one of the first three
+	Mode         int     // a txn.Mode; negative draws one
+	Durable      int     // 1 forces a store, 0 forbids one, negative draws
+	CommitDelay  int64   // the writer's delay in steps; negative draws one
+	Interleave   float64 // switch probability at Options.Interleave points; negative draws one
+	NoInvariants bool    // skip internal invariant checks
+	MaxSteps     int     // liveness bound; zero uses a default
 }
 
 // Params are a seed's drawn parameters.
@@ -42,12 +43,13 @@ type Params struct {
 	SyncFailP   float64 // per-sync failure chance; a failure crashes
 	Latency     int64   // max sync time in steps
 	CommitDelay int64   // the writer's wait before each flush, in steps
+	Interleave  float64 // chance of switching at each fine-grained interleave point
 	Detail      string  // workload configuration
 }
 
 func (p Params) String() string {
-	s := fmt.Sprintf("mode=%s workload=%s clients=%d quota=%d bucketBits=%d skew=%v",
-		p.Mode, p.Workload, p.Clients, p.Quota, p.BucketBits, p.Skew)
+	s := fmt.Sprintf("mode=%s workload=%s clients=%d quota=%d bucketBits=%d skew=%v interleave=%g",
+		p.Mode, p.Workload, p.Clients, p.Quota, p.BucketBits, p.Skew, p.Interleave)
 	if p.Durable {
 		s += fmt.Sprintf(" durable nosync=%v crashP=%g syncFailP=%g latency=%d commitDelay=%d", p.NoSync, p.CrashP, p.SyncFailP, p.Latency, p.CommitDelay)
 	}
@@ -104,6 +106,31 @@ func (s *sched) Wait(cond func() bool) {
 	}
 	if c != nil {
 		c.blocked = nil
+	}
+}
+
+// drawInterleave returns the seed's switch probability at interleave
+// points, from its own stream so every other parameter keeps its value.
+func drawInterleave(seed uint64, cfg Config) float64 {
+	if cfg.Interleave >= 0 {
+		return cfg.Interleave
+	}
+	g := rand.New(rand.NewPCG(seed, 0xa54ff53a5f1d36f1))
+	return [...]float64{0, 0.01, 0.1, 0.5}[g.IntN(4)]
+}
+
+// interleaver returns Options.Interleave for probability p, or nil for 0.
+// Its decisions come from their own stream, so they never shift the
+// scheduler's draws.
+func (s *sched) interleaver(seed uint64, p float64) func() {
+	if p == 0 {
+		return nil
+	}
+	r := rand.New(rand.NewPCG(seed, 0x3c6ef372fe94f82b))
+	return func() {
+		if s.cur != nil && r.Float64() < p {
+			s.Yield()
+		}
 	}
 }
 
@@ -194,6 +221,7 @@ func Run(seed uint64, cfg Config) (res Result) {
 	res.Seed = seed
 	r := rand.New(rand.NewPCG(seed, 0x9e3779b97f4a7c15))
 	p, w := draw(seed, r, cfg)
+	p.Interleave = drawInterleave(seed, cfg)
 	res.Params = p
 	maxSteps := cfg.MaxSteps
 	if maxSteps == 0 {
@@ -202,11 +230,12 @@ func Run(seed uint64, cfg Config) (res Result) {
 	child := func() *rand.Rand { return rand.New(rand.NewPCG(r.Uint64(), r.Uint64())) }
 
 	s := &sched{}
+	interleave := s.interleaver(seed, p.Interleave)
 	d := &disk{s: s, r: child(), latency: p.Latency}
 	rec := check.NewRecorder()
 	schemas := w.Schemas()
 	open := func() *txn.DB {
-		o := txn.Options{Mode: p.Mode, BucketBits: p.BucketBits, Yield: s.Yield, Wait: s.Wait, NoInvariants: cfg.NoInvariants}
+		o := txn.Options{Mode: p.Mode, BucketBits: p.BucketBits, Yield: s.Yield, Interleave: interleave, Wait: s.Wait, NoInvariants: cfg.NoInvariants}
 		if p.Durable {
 			o.Store, o.NoSync = d, p.NoSync
 			if p.CommitDelay > 0 {
@@ -333,7 +362,7 @@ func Run(seed uint64, cfg Config) (res Result) {
 			if res.Steps > maxSteps {
 				return fmt.Errorf("liveness: clients unfinished after %d steps", maxSteps)
 			}
-			if !cfg.NoInvariants && res.Steps%1000 == 0 {
+			if !cfg.NoInvariants && res.Steps%1000 == 0 && !db.Committing() {
 				if err := db.CheckInvariants(); err != nil {
 					return err
 				}

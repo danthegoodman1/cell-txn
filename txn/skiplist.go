@@ -43,10 +43,10 @@ func levelOf(key string) int {
 
 // seek returns the first node with key >= k, filling preds when non-nil.
 // It returns the node it compared: reloading x.next[0] could see a smaller
-// key that the writer inserted after the comparison. Readers pass the
-// simulator's yield, which runs before seek returns so a commit can
+// key that the writer inserted after the comparison. Readers pass
+// Options.Interleave, which runs before seek returns so a commit can
 // interleave there; the writer passes nil.
-func (s *skiplist[T]) seek(k string, preds *[maxLevel]*node[T], yield func()) *node[T] {
+func (s *skiplist[T]) seek(k string, preds *[maxLevel]*node[T], interleave func()) *node[T] {
 	x := &s.head
 	var n *node[T]
 	for i := maxLevel - 1; i >= 0; i-- {
@@ -61,8 +61,8 @@ func (s *skiplist[T]) seek(k string, preds *[maxLevel]*node[T], yield func()) *n
 			preds[i] = x
 		}
 	}
-	if yield != nil {
-		yield()
+	if interleave != nil {
+		interleave()
 		if bugSeekReload {
 			return x.next[0].Load()
 		}
@@ -70,8 +70,8 @@ func (s *skiplist[T]) seek(k string, preds *[maxLevel]*node[T], yield func()) *n
 	return n
 }
 
-func (s *skiplist[T]) get(k string, yield func()) *node[T] {
-	if n := s.seek(k, nil, yield); n != nil && n.key == k {
+func (s *skiplist[T]) get(k string, interleave func()) *node[T] {
+	if n := s.seek(k, nil, interleave); n != nil && n.key == k {
 		return n
 	}
 	return nil
@@ -81,18 +81,33 @@ func (s *skiplist[T]) first() *node[T] { return s.head.next[0].Load() }
 
 // getOrInsert must only be called by the single writer. A new node is fully
 // built before it is linked, bottom level first, so readers always see a
-// sorted list at level 0.
-func (s *skiplist[T]) getOrInsert(k string) *node[T] {
+// sorted list at level 0. interleave, when set, runs before each link, so
+// readers in the simulator see a node linked at some levels only.
+func (s *skiplist[T]) getOrInsert(k string, interleave func()) *node[T] {
 	var preds [maxLevel]*node[T]
 	if n := s.seek(k, &preds, nil); n != nil && n.key == k {
 		return n
 	}
 	lvl := levelOf(k)
 	n := &node[T]{key: k, next: make([]atomic.Pointer[node[T]], lvl)}
+	if bugLinkBeforeInit {
+		for i := range lvl {
+			succ := preds[i].next[i].Load()
+			preds[i].next[i].Store(n)
+			if interleave != nil {
+				interleave()
+			}
+			n.next[i].Store(succ)
+		}
+		return n
+	}
 	for i := range lvl {
 		n.next[i].Store(preds[i].next[i].Load())
 	}
 	for i := range lvl {
+		if interleave != nil {
+			interleave()
+		}
 		preds[i].next[i].Store(n)
 	}
 	return n

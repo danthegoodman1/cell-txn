@@ -13,12 +13,12 @@ func TestSeeds(t *testing.T) {
 		n = 100
 	}
 	for seed := range n {
-		r := Run(seed, Config{Mode: -1, Durable: -1, CommitDelay: -1})
+		r := Run(seed, Config{Mode: -1, Durable: -1, CommitDelay: -1, Interleave: -1})
 		if r.Err != nil {
 			t.Fatalf("seed %d (%s): %v", seed, r.Params, r.Err)
 		}
 		if seed%10 == 0 {
-			r2 := Run(seed, Config{Mode: -1, Durable: -1, CommitDelay: -1})
+			r2 := Run(seed, Config{Mode: -1, Durable: -1, CommitDelay: -1, Interleave: -1})
 			if r2.Trace != r.Trace || r2.Steps != r.Steps || fmt.Sprint(r2.Err) != fmt.Sprint(r.Err) {
 				t.Fatalf("seed %d is nondeterministic: trace %#x/%#x steps %d/%d", seed, r.Trace, r2.Trace, r.Steps, r2.Steps)
 			}
@@ -33,7 +33,7 @@ func TestSQLSeeds(t *testing.T) {
 		n = 30
 	}
 	for seed := range n {
-		if r := RunSQL(seed, Config{Mode: -1}); r.Err != nil {
+		if r := RunSQL(seed, Config{Mode: -1, Interleave: -1}); r.Err != nil {
 			t.Fatalf("seed %d (%s): %v", seed, r.Params, r.Err)
 		}
 	}

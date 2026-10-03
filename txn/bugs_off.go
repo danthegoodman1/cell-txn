@@ -19,6 +19,8 @@ const (
 	bugReadOnlyNoWait     = false
 	bugAckJoined          = false
 	bugSeekReload         = false
+	bugPublishEarly       = false
+	bugLinkBeforeInit     = false
 )
 
 // Bugs lists the deliberate bugs SetBug accepts.

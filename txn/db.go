@@ -100,6 +100,11 @@ type Options struct {
 	// Yield, when set, is called at each interleaving point. The simulator
 	// uses it to switch coroutines.
 	Yield func()
+	// Interleave, when set, is called at fine-grained points inside
+	// lock-free reads and inside commits, where the simulator may switch
+	// coroutines. Commits call it while holding the commit lock, so it
+	// requires Wait, which makes that lock cooperative.
+	Interleave func()
 	// Now and OnCommit, when both set, report commit-lock wait and hold
 	// times in Now's units.
 	Now      func() int64
@@ -252,11 +257,12 @@ type DB struct {
 	opts Options
 	// tables lists every table by ID, base and index alike; DDL replaces
 	// the slice under the commit lock.
-	tables  atomic.Pointer[[]*table]
-	mu      sync.Mutex // the global commit lock
-	last    atomic.Uint64
-	readers registry
-	dur     durability
+	tables     atomic.Pointer[[]*table]
+	mu         sync.Mutex // the global commit lock
+	committing bool       // the commit lock, when Wait makes it cooperative
+	last       atomic.Uint64
+	readers    registry
+	dur        durability
 }
 
 func newTable(id int, s Schema, prefix int) *table {
@@ -320,8 +326,8 @@ func (db *DB) addIndex(tbl int, d Index) *index {
 
 // CreateTable adds a table outside any transaction and returns its ID.
 func (db *DB) CreateTable(s Schema) int {
-	db.mu.Lock()
-	defer db.mu.Unlock()
+	db.lock()
+	defer db.unlock()
 	id := len(*db.tables.Load())
 	db.appendTable(newTable(id, s, s.BucketPrefix))
 	for _, d := range s.Indexes {
@@ -334,8 +340,8 @@ func (db *DB) CreateTable(s Schema) int {
 // from the latest committed rows. It fails if a unique index would hold a
 // duplicate.
 func (db *DB) CreateIndex(tbl int, d Index) error {
-	db.mu.Lock()
-	defer db.mu.Unlock()
+	db.lock()
+	defer db.unlock()
 	t := db.table(tbl)
 	last := db.last.Load()
 	tmp := &index{def: d}
@@ -354,7 +360,7 @@ func (db *DB) CreateIndex(tbl int, d Index) error {
 	}
 	ix := db.addIndex(tbl, d)
 	for _, e := range ents {
-		ix.tbl.rows.getOrInsert(e.key).val.head.Store(&version{ts: last, mask: ix.tbl.all | Exists, row: []Value{e.pk}})
+		ix.tbl.rows.getOrInsert(e.key, nil).val.head.Store(&version{ts: last, mask: ix.tbl.all | Exists, row: []Value{e.pk}})
 	}
 	return nil
 }
@@ -363,8 +369,8 @@ func (db *DB) CreateIndex(tbl int, d Index) error {
 // indexes shift down one position. A transaction that began before the
 // drop must not scan the table's indexes by position.
 func (db *DB) DropIndex(tbl, idx int) {
-	db.mu.Lock()
-	defer db.mu.Unlock()
+	db.lock()
+	defer db.unlock()
 	t := db.table(tbl)
 	old := t.ixs.Load().list
 	set := &indexSet{list: append(append([]*index(nil), old[:idx]...), old[idx+1:]...)}
@@ -376,8 +382,8 @@ func (db *DB) DropIndex(tbl, idx int) {
 
 // SetChecks replaces a table's CHECK constraints for future commits.
 func (db *DB) SetChecks(tbl int, checks []Check) {
-	db.mu.Lock()
-	defer db.mu.Unlock()
+	db.lock()
+	defer db.unlock()
 	db.table(tbl).checks = checks
 }
 
@@ -425,6 +431,36 @@ func (db *DB) BumpID(tbl int, id uint64) {
 // Begin starts a transaction reading the latest committed snapshot.
 func (db *DB) Begin() *Txn {
 	return &Txn{db: db, readTs: db.readers.begin(db.last.Load)}
+}
+
+// lock takes the commit lock. With Wait set, as in the simulator, it is a
+// flag a coroutine waits on, so a commit can interleave with other
+// coroutines while holding it.
+func (db *DB) lock() {
+	if db.opts.Wait == nil {
+		db.mu.Lock()
+		return
+	}
+	db.opts.Wait(func() bool { return !db.committing })
+	db.committing = true
+}
+
+func (db *DB) unlock() {
+	if db.opts.Wait == nil {
+		db.mu.Unlock()
+		return
+	}
+	db.committing = false
+}
+
+// Committing reports whether a commit holds the cooperative commit lock;
+// the simulator checks invariants only between commits.
+func (db *DB) Committing() bool { return db.committing }
+
+func (db *DB) interleave() {
+	if db.opts.Interleave != nil {
+		db.opts.Interleave()
+	}
 }
 
 func (db *DB) point() {
@@ -489,8 +525,8 @@ func (t *table) changedSince(lo, hi string, ts uint64) bool {
 // CheckInvariants verifies the store's internal structure and that every
 // secondary index matches its table at the latest commit.
 func (db *DB) CheckInvariants() error {
-	db.mu.Lock()
-	defer db.mu.Unlock()
+	db.lock()
+	defer db.unlock()
 	last := db.last.Load()
 	for _, t := range *db.tables.Load() {
 		if !t.rows.check() || !t.buckets.check() {

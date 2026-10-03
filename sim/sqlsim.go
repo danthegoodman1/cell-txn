@@ -353,6 +353,7 @@ func RunSQL(seed uint64, cfg Config) (res Result) {
 	if cfg.Mode >= 0 {
 		p.Mode = txn.Mode(cfg.Mode)
 	}
+	p.Interleave = drawInterleave(seed, cfg)
 	sp := drawSQL(r)
 	p.Detail = fmt.Sprintf("%+v", sp)
 	res.Params = p
@@ -363,7 +364,7 @@ func RunSQL(seed uint64, cfg Config) (res Result) {
 	child := func() *rand.Rand { return rand.New(rand.NewPCG(r.Uint64(), r.Uint64())) }
 
 	s := &sched{}
-	db := txn.Open(txn.Options{Mode: p.Mode, BucketBits: p.BucketBits, Yield: s.Yield, Wait: s.Wait, NoInvariants: cfg.NoInvariants})
+	db := txn.Open(txn.Options{Mode: p.Mode, BucketBits: p.BucketBits, Yield: s.Yield, Interleave: s.interleaver(seed, p.Interleave), Wait: s.Wait, NoInvariants: cfg.NoInvariants})
 	pro := sqlgms.NewProvider(db)
 	eng := sqlgms.NewEngine(pro)
 	var logs []sqlTxn
@@ -480,7 +481,7 @@ func RunSQL(seed uint64, cfg Config) (res Result) {
 			res.Err = fmt.Errorf("liveness: clients unfinished after %d steps", maxSteps)
 			return res
 		}
-		if !cfg.NoInvariants && res.Steps%500 == 0 {
+		if !cfg.NoInvariants && res.Steps%500 == 0 && !db.Committing() {
 			if res.Err = db.CheckInvariants(); res.Err != nil {
 				return res
 			}

@@ -145,7 +145,7 @@ The simulator (`cmd/sim`) runs the whole system on one goroutine from a single s
 - Randomness comes from a seeded `rand.Rand` per client; waiting and yielding go through `Options.Wait` and `Options.Yield`, which the simulator wires to its scheduler.
 - Core code starts no goroutines and never calls `time.Now`, `time.Sleep` or the global `math/rand`. `sim/rules_test.go` rejects `go` statements and imports of `time`, `math/rand` and `os` there.
 - Iteration order never depends on Go map order: iterate slices or ordered structures.
-- Every wait goes through `Options.Wait`: production blocks on a condition variable, the simulator suspends the coroutine until the condition holds. The commit lock is the one exception: nothing yields while holding it, so it's never contended in simulation.
+- Every wait goes through `Options.Wait`: production blocks on a condition variable, the simulator suspends the coroutine until the condition holds. With `Wait` set, the commit lock is a flag coroutines wait on instead of a mutex, so a commit can interleave with other coroutines while holding it; invariant checks run only between commits.
 - `store/badger` is exempt, because the simulator replaces it with `sim/disk`.
 
 **Scheduling:**
@@ -153,13 +153,17 @@ The simulator (`cmd/sim`) runs the whole system on one goroutine from a single s
 - Workloads are straight-line Go against a client interface. The bench runs each client on a goroutine; the simulator runs each as a coroutine that yields before every operation.
 - The scheduler picks the next runnable coroutine from the seeded PRNG: neither sleeping nor blocked on a false condition. With nothing runnable and nothing asleep, the run fails as a deadlock. Skewed seeds give clients unequal weights, so slow clients hold old snapshots across many commits.
 - Transactions read snapshots, so a transaction's results depend only on the order of begins, commits and writer steps. Yielding at operation boundaries covers those orders.
-- The store calls `Options.Yield` wherever another goroutine can observe intermediate state. `Scan` and `IndexScan` yield between rows, so commits land mid-scan, and every reader's skiplist seek yields before returning, so commits land mid-traversal.
+- The store calls `Options.Yield` at operation boundaries; `Scan` and `IndexScan` yield between rows, so commits land mid-scan.
+- Finer points call `Options.Interleave`, where the simulator switches with a per-seed probability: before every reader's skiplist seek returns, before each level a commit links into a skiplist, between a commit's row installs, and before it publishes its timestamp. Readers therefore see partially linked nodes and partially installed commits, as they can on real threads.
 
 **Swarm parameters.** Each seed draws its own:
 - mode, workload, transaction mix and secondary indexes;
 - client count, quota, key-space size, bucket width and θ;
 - think time, scheduler skew and the share of long-running readers;
-- whether a simulated disk is attached, sync or not, its sync latency, the writer's commit delay, and the probabilities of crashes and sync failures. The commit delay comes from its own random stream, so a sweep with `-commitdelay 0` reproduces every other parameter.
+- whether a simulated disk is attached, sync or not, its sync latency, the writer's commit delay, and the probabilities of crashes and sync failures;
+- the chance of switching at each interleave point: 0, 1%, 10% or 50%.
+
+The commit delay and the interleave probability come from their own random streams, so fixing either with `-commitdelay` or `-interleave` leaves every other parameter unchanged.
 
 Small key spaces and narrow buckets force contention.
 
@@ -203,7 +207,11 @@ A crash stops every coroutine, keeps the disk's synced commits plus a random pre
 - a commit is acknowledged before its sync;
 - a read-only commit skips its durability wait;
 - a flush acknowledges commits that joined the queue during its sync;
-- a reader's skiplist seek reloads its result after comparing.
+- a reader's skiplist seek reloads its result after comparing;
+- a commit publishes its timestamp before installing its rows;
+- a skiplist node is linked before its next pointers are set.
+
+The last three surface only through interleave points: with `-interleave 0` each survives 30,000 seeds.
 
 **SQL simulation.** `sim -workload sql` runs random SQL transactions through go-mysql-server and the store, with the clients as coroutines and no wire protocol.
 - Statements cover point, range and secondary-index reads, aggregates, joins, a correlated subquery, deltas over one and many rows, blind and indexed writes, unique-key collisions, `INSERT … ON DUPLICATE KEY UPDATE`, `REPLACE`, single and range deletes, explicit and autocommit transactions, and rollbacks.

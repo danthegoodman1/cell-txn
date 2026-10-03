@@ -9,18 +9,18 @@ Measured 2026-10-03 on one 24-core Linux machine with NVMe storage (ext4). Clien
 | Unit and scenario tests | spec scenarios 1–9, indexes, savepoints, GC, overflow, SQL scenarios, durable restart | pass under `-race` |
 | Stress tests | every workload on real goroutines, all modes, full history replay | pass under `-race` |
 | Stress under load | TPC-C stress tests in every mode, 600 times each beside a simulator sweep (5,400 runs) | 0 failures |
-| Core simulation | 30,000 seeds, every workload, mode, disk setting and commit delay; 1,230,978 crashes with recovery checks | 0 failures |
-| Per-workload simulation | 30,000 seeds each for random, users and TPC-C; 4,763,288 crashes | 0 failures |
-| SQL simulation | 30,000 seeds through go-mysql-server, replayed against its reference engine; 247,381 conflict retries | 0 failures |
+| Core simulation | 30,000 seeds, every workload, mode, disk setting and commit delay and interleave probability; 463,644 crashes with recovery checks | 0 failures |
+| Per-workload simulation | 30,000 seeds each for random, users and TPC-C; 1,695,016 crashes | 0 failures |
+| SQL simulation | 30,000 seeds through go-mysql-server, replayed against its reference engine; 233,778 conflict retries | 0 failures |
 | Determinism | every tenth seed rerun in every sweep (15,000 reruns) | 0 mismatches |
-| Self-test | 12 deliberate bugs, internal assertions off | all found, by seed 465 at the latest |
+| Self-test | 14 deliberate bugs, internal assertions off | all found, by seed 367 at the latest |
 | Race detector | 1,000 parallel SQL seeds in a `-race` build | no races |
-| Crash test | 8 rounds of `kill -9` during TPC-C on one Badger store, half with a 500µs commit delay; about 22,800 commits | no acknowledged commit lost; recovered state equals the serial replay |
+| Crash test | 8 rounds of `kill -9` during TPC-C on one Badger store, half with a 500µs commit delay; about 18,200 commits | no acknowledged commit lost; recovered state equals the serial replay |
 | go-mysql-server engine tests | 14 suites | 1,740 pass, 162 fail, 36 skip; see `sqlgms/enginetest.txt` |
 
 The engine-test failures are features outside the prototype (ALTER TABLE, foreign keys, triggers, temporary tables, prefix indexes, events and procedures), metadata display (DESCRIBE and SHOW CREATE TABLE), LAST_INSERT_ID reporting after ON DUPLICATE KEY UPDATE, and transaction scripts that expect REPEATABLE READ outcomes where SERIALIZABLE must abort one writer.
 
-The simulator also found real bugs while it was being built. Its oracle exposed two go-mysql-server bugs: the reference engine's ROLLBACK leaves secondary indexes stale, and engine construction races on package globals. It also caught a deferred CHECK that a later delete could hide, a load that could be lost before its first sync, and several harness mistakes. The engine tests found missing MySQL savepoint semantics and missing statement-level read consistency for UPDATE … JOIN. The stress tests found a lock-free skiplist seek that reloaded its result after comparing, so a key the committer linked in between could make a scan or point read miss existing rows; the simulator now yields inside every reader's seek, and its seek-reload self-test bug checks that it catches this class. All of these are fixed.
+The simulator also found real bugs while it was being built. Its oracle exposed two go-mysql-server bugs: the reference engine's ROLLBACK leaves secondary indexes stale, and engine construction races on package globals. It also caught a deferred CHECK that a later delete could hide, a load that could be lost before its first sync, and several harness mistakes. The engine tests found missing MySQL savepoint semantics and missing statement-level read consistency for UPDATE … JOIN. The stress tests found a lock-free skiplist seek that reloaded its result after comparing, so a key the committer linked in between could make a scan or point read miss existing rows; the simulator now interleaves commits with lock-free reads at fine-grained points, and three self-test bugs that only those points expose check that it catches this class. All of these are fixed.
 
 ## In process (no SQL)
 

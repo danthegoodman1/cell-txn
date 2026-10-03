@@ -19,6 +19,8 @@ var (
 	bugReadOnlyNoWait     bool // read-only commits skip the durability wait
 	bugAckJoined          bool // a flush acknowledges commits queued during its sync
 	bugSeekReload         bool // a reader's seek reloads its result after comparing
+	bugPublishEarly       bool // a commit publishes its timestamp before installing
+	bugLinkBeforeInit     bool // a skiplist node is linked before its next pointers are set
 )
 
 var bugFlags = map[string]*bool{
@@ -34,10 +36,12 @@ var bugFlags = map[string]*bool{
 	"read-only-no-wait":    &bugReadOnlyNoWait,
 	"ack-joined":           &bugAckJoined,
 	"seek-reload":          &bugSeekReload,
+	"publish-early":        &bugPublishEarly,
+	"link-before-init":     &bugLinkBeforeInit,
 }
 
 // Bugs lists the deliberate bugs SetBug accepts.
-var Bugs = []string{"skip-buckets", "set-no-exists", "gc-eager", "check-skip-delta", "no-absent-read", "delta-read-untracked", "unique-no-read", "index-no-range", "ack-before-sync", "read-only-no-wait", "ack-joined", "seek-reload"}
+var Bugs = []string{"skip-buckets", "set-no-exists", "gc-eager", "check-skip-delta", "no-absent-read", "delta-read-untracked", "unique-no-read", "index-no-range", "ack-before-sync", "read-only-no-wait", "ack-joined", "seek-reload", "publish-early", "link-before-init"}
 
 // SetBug enables a deliberate bug for the whole process.
 func SetBug(name string) error {
