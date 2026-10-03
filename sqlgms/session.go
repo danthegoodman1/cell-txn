@@ -185,6 +185,7 @@ func NewEngine(p *Provider) *sqle.Engine {
 	e := sqle.New(analyzer.NewDefault(p), &sqle.Config{})
 	e.Analyzer.ExecBuilder = NewBuilder()
 	e.Analyzer.Catalog.StatsProvider = noStats{}
+	e.ProcessList = newProcessList()
 	return e
 }
 
