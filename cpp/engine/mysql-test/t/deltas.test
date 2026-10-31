@@ -1,0 +1,52 @@
+# Deltas from ON DUPLICATE KEY UPDATE and from prepared statements commute
+# like UPDATE's; an assignment that reads its column elsewhere does not.
+
+CREATE TABLE hits (id INT PRIMARY KEY, n INT NOT NULL, note VARCHAR(10)) ENGINE=CELLTNX;
+INSERT INTO hits VALUES (1, 0, 'a');
+
+connect (con1, localhost, root,,);
+connect (con2, localhost, root,,);
+
+--echo # Two ON DUPLICATE KEY UPDATE increments of one row both commit.
+connection con1;
+BEGIN;
+INSERT INTO hits VALUES (1, 1, 'x') ON DUPLICATE KEY UPDATE n = n + 1;
+connection con2;
+INSERT INTO hits VALUES (1, 1, 'y') ON DUPLICATE KEY UPDATE n = n + 1;
+connection con1;
+COMMIT;
+SELECT * FROM hits;
+
+--echo # A new key inserts, with the delta never applied.
+INSERT INTO hits VALUES (2, 5, 'b') ON DUPLICATE KEY UPDATE n = n + 1;
+SELECT * FROM hits ORDER BY id;
+
+--echo # An assignment reading n elsewhere makes n a read: the second commit conflicts.
+connection con1;
+BEGIN;
+INSERT INTO hits VALUES (1, 1, 'x') ON DUPLICATE KEY UPDATE n = n + 1, note = n;
+connection con2;
+INSERT INTO hits VALUES (1, 1, 'y') ON DUPLICATE KEY UPDATE n = n + 1;
+connection con1;
+--error ER_LOCK_DEADLOCK
+COMMIT;
+SELECT * FROM hits ORDER BY id;
+
+--echo # Prepared increments with parameters commute.
+connection con1;
+PREPARE inc FROM 'UPDATE hits SET n = n + ? WHERE id = ?';
+SET @k = 10, @id = 2;
+BEGIN;
+EXECUTE inc USING @k, @id;
+connection con2;
+PREPARE inc FROM 'UPDATE hits SET n = n + ? WHERE id = ?';
+SET @k = 100, @id = 2;
+EXECUTE inc USING @k, @id;
+connection con1;
+COMMIT;
+SELECT * FROM hits ORDER BY id;
+
+disconnect con1;
+disconnect con2;
+connection default;
+DROP TABLE hits;

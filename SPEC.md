@@ -128,7 +128,7 @@ Semantics:
 
 - **Snapshots:** new transactions take `readTs = lastCommitTs` (an atomic load). Commits install in timestamp order under the lock, so this is always a complete, consistent snapshot.
 - **Exact validation:** commits install in timestamp order, so validation sees every version committed between `readTs` and `commitTs`.
-- **GC:** install trims each written chain to every version newer than the oldest active `readTs`, plus the newest one at or below it. Validation needs the write masks of the newer versions even after newer snapshots supersede them. A row that stops being written keeps its last few versions until its next write.
+- **GC:** install trims each written chain to every version newer than the oldest active `readTs`, plus the newest one at or below it. Validation needs the write masks of the newer versions even after newer snapshots supersede them. A row that stops being written keeps its last few versions until its next write. The C++ core trims a chain only once the installs since its last trim reach the versions that trim kept, so a hot row's walk to the horizon costs O(1) hops per install, amortized, and its chain stays within about twice its live versions. Each C++ version also records where its run of same-mask versions began, so validation checks a run of deltas once instead of walking it.
 - **Active snapshots:** `Begin` loads `lastCommitTs` and registers its `readTs` under one mutex, which GC also takes to compute the oldest `readTs`. GC therefore never trims a version a starting transaction needs.
 
 ## Durability

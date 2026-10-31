@@ -1,0 +1,456 @@
+innodb-serializable tpcc   clients=32      2269 commits/s  retries/txn 0.00  p50 12.032359ms  p99 38.532218ms  errors 0
+audit: tpcc data consistent after 18152 transactions
+innodb-serializable tpcc   clients=32      2282 commits/s  retries/txn 0.00  p50 12.027029ms  p99 35.819917ms  errors 0
+audit: tpcc data consistent after 18257 transactions
+innodb-serializable tpcc   clients=32      2264 commits/s  retries/txn 0.00  p50 12.043012ms  p99 38.338769ms  errors 0
+audit: tpcc data consistent after 18108 transactions
+innodb-serializable tpcc   clients=32      4200 commits/s  retries/txn 0.00  p50 5.94618ms  p99 35.150621ms  errors 0
+audit: tpcc data consistent after 33596 transactions
+innodb-serializable tpcc   clients=32      4714 commits/s  retries/txn 0.00  p50 5.917281ms  p99 38.143082ms  errors 0
+audit: tpcc data consistent after 37708 transactions
+innodb-serializable tpcc   clients=32      4790 commits/s  retries/txn 0.00  p50 5.918636ms  p99 30.868942ms  errors 0
+audit: tpcc data consistent after 38318 transactions
+innodb-serializable tpcc   clients=32       109 commits/s  retries/txn 0.00  p50 313.054274ms  p99 497.952503ms  errors 0
+audit: tpcc data consistent after 875 transactions
+innodb-serializable tpcc   clients=32       114 commits/s  retries/txn 0.00  p50 305.884703ms  p99 486.864749ms  errors 0
+audit: tpcc data consistent after 915 transactions
+innodb-serializable tpcc   clients=32       109 commits/s  retries/txn 0.00  p50 317.635736ms  p99 491.506264ms  errors 0
+audit: tpcc data consistent after 874 transactions
+innodb-serializable users  clients=32      7632 commits/s  retries/txn 0.00  p50 3.977113ms  p99 10.11034ms  errors 0
+innodb-serializable users  clients=32      7410 commits/s  retries/txn 0.00  p50 3.975583ms  p99 10.709521ms  errors 0
+innodb-serializable users  clients=32      7619 commits/s  retries/txn 0.00  p50 3.977429ms  p99 10.483093ms  errors 0
+innodb-serializable users  clients=32      7639 commits/s  retries/txn 0.00  p50 3.979629ms  p99 10.027187ms  errors 0
+innodb-serializable users  clients=32      7654 commits/s  retries/txn 0.00  p50 3.975373ms  p99 9.955975ms  errors 0
+innodb-serializable users  clients=32      7438 commits/s  retries/txn 0.00  p50 3.979083ms  p99 10.17481ms  errors 0
+innodb-serializable users  clients=32      5924 commits/s  retries/txn 0.00  p50 4.05676ms  p99 20.668452ms  errors 0
+innodb-serializable users  clients=32      7612 commits/s  retries/txn 0.00  p50 3.977152ms  p99 10.095953ms  errors 0
+innodb-serializable users  clients=32      7655 commits/s  retries/txn 0.00  p50 3.976573ms  p99 10.02572ms  errors 0
+innodb-serializable users  clients=32      7389 commits/s  retries/txn 0.00  p50 3.973364ms  p99 10.390358ms  errors 0
+innodb-serializable users  clients=32      7608 commits/s  retries/txn 0.00  p50 3.976577ms  p99 9.978229ms  errors 0
+innodb-serializable users  clients=32      7583 commits/s  retries/txn 0.00  p50 3.979172ms  p99 10.134896ms  errors 0
+innodb-serializable users  clients=32      7764 commits/s  retries/txn 0.00  p50 3.971495ms  p99 8.123735ms  errors 0
+innodb-serializable users  clients=32      7556 commits/s  retries/txn 0.00  p50 3.972817ms  p99 8.059915ms  errors 0
+innodb-serializable users  clients=32      7762 commits/s  retries/txn 0.00  p50 3.976894ms  p99 8.274423ms  errors 0
+innodb-serializable ledger clients=32      7367 commits/s  retries/txn 0.00  p50 3.956287ms  p99 12.176645ms  errors 0
+audit: ledger data consistent after 58935 transactions
+innodb-serializable ledger clients=32      7134 commits/s  retries/txn 0.00  p50 3.957423ms  p99 12.124072ms  errors 0
+audit: ledger data consistent after 57070 transactions
+innodb-serializable ledger clients=32      7383 commits/s  retries/txn 0.00  p50 3.958515ms  p99 12.083826ms  errors 0
+audit: ledger data consistent after 59062 transactions
+innodb-serializable ledger clients=32      7330 commits/s  retries/txn 0.00  p50 3.973665ms  p99 12.119685ms  errors 0
+audit: ledger data consistent after 58639 transactions
+innodb-serializable ledger clients=32      7413 commits/s  retries/txn 0.00  p50 3.988024ms  p99 12.2469ms  errors 0
+audit: ledger data consistent after 59302 transactions
+innodb-serializable ledger clients=32      7374 commits/s  retries/txn 0.00  p50 3.997914ms  p99 13.837313ms  errors 0
+audit: ledger data consistent after 58995 transactions
+innodb-serializable ledger clients=32      7286 commits/s  retries/txn 0.00  p50 3.982404ms  p99 12.247166ms  errors 0
+audit: ledger data consistent after 58292 transactions
+innodb-serializable ledger clients=32      7438 commits/s  retries/txn 0.00  p50 3.988025ms  p99 12.177451ms  errors 0
+audit: ledger data consistent after 59500 transactions
+innodb-serializable ledger clients=32      7392 commits/s  retries/txn 0.00  p50 3.985195ms  p99 12.217518ms  errors 0
+audit: ledger data consistent after 59134 transactions
+innodb-serializable ledger clients=32       398 commits/s  retries/txn 0.01  p50 70.071952ms  p99 242.473135ms  errors 0
+audit: ledger data consistent after 3187 transactions
+innodb-serializable ledger clients=32       415 commits/s  retries/txn 0.01  p50 76.75342ms  p99 96.594519ms  errors 0
+audit: ledger data consistent after 3323 transactions
+innodb-serializable ledger clients=32       414 commits/s  retries/txn 0.01  p50 76.839646ms  p99 94.261922ms  errors 0
+audit: ledger data consistent after 3316 transactions
+innodb-repeatable-read tpcc   clients=32      3156 commits/s  retries/txn 0.00  p50 9.794367ms  p99 47.994899ms  errors 0
+audit: tpcc data consistent after 25246 transactions
+innodb-repeatable-read tpcc   clients=32      3279 commits/s  retries/txn 0.00  p50 8.301375ms  p99 41.826725ms  errors 0
+audit: tpcc data consistent after 26232 transactions
+innodb-repeatable-read tpcc   clients=32      3157 commits/s  retries/txn 0.00  p50 9.811773ms  p99 49.758424ms  errors 0
+audit: tpcc data consistent after 25253 transactions
+innodb-repeatable-read tpcc   clients=32      5723 commits/s  retries/txn 0.00  p50 3.975001ms  p99 26.292688ms  errors 0
+audit: tpcc data consistent after 45786 transactions
+innodb-repeatable-read tpcc   clients=32      5684 commits/s  retries/txn 0.00  p50 3.974119ms  p99 30.449925ms  errors 0
+audit: tpcc data consistent after 45473 transactions
+innodb-repeatable-read tpcc   clients=32      5708 commits/s  retries/txn 0.00  p50 3.973623ms  p99 24.666953ms  errors 0
+audit: tpcc data consistent after 45664 transactions
+innodb-repeatable-read tpcc   clients=32       137 commits/s  retries/txn 0.00  p50 136.615695ms  p99 584.137084ms  errors 0
+audit: tpcc data consistent after 1093 transactions
+innodb-repeatable-read tpcc   clients=32       138 commits/s  retries/txn 0.00  p50 110.103989ms  p99 555.283159ms  errors 0
+audit: tpcc data consistent after 1104 transactions
+innodb-repeatable-read tpcc   clients=32       135 commits/s  retries/txn 0.00  p50 108.853376ms  p99 584.798001ms  errors 0
+audit: tpcc data consistent after 1077 transactions
+innodb-repeatable-read users  clients=32      7422 commits/s  retries/txn 0.00  p50 3.978551ms  p99 11.867728ms  errors 0
+innodb-repeatable-read users  clients=32      7626 commits/s  retries/txn 0.00  p50 3.981581ms  p99 10.053193ms  errors 0
+innodb-repeatable-read users  clients=32      7604 commits/s  retries/txn 0.00  p50 3.980153ms  p99 10.042421ms  errors 0
+innodb-repeatable-read users  clients=32      7628 commits/s  retries/txn 0.00  p50 3.979472ms  p99 10.133385ms  errors 0
+innodb-repeatable-read users  clients=32      7400 commits/s  retries/txn 0.00  p50 3.980023ms  p99 10.060815ms  errors 0
+innodb-repeatable-read users  clients=32      7664 commits/s  retries/txn 0.00  p50 3.975668ms  p99 9.804297ms  errors 0
+innodb-repeatable-read users  clients=32      6677 commits/s  retries/txn 0.00  p50 4.277328ms  p99 17.188893ms  errors 0
+innodb-repeatable-read users  clients=32      6767 commits/s  retries/txn 0.00  p50 3.985927ms  p99 12.090373ms  errors 0
+innodb-repeatable-read users  clients=32      7596 commits/s  retries/txn 0.00  p50 3.97718ms  p99 10.18008ms  errors 0
+innodb-repeatable-read users  clients=32      7679 commits/s  retries/txn 0.00  p50 3.973979ms  p99 9.972496ms  errors 0
+innodb-repeatable-read users  clients=32      7617 commits/s  retries/txn 0.00  p50 3.974584ms  p99 10.19852ms  errors 0
+innodb-repeatable-read users  clients=32      7612 commits/s  retries/txn 0.00  p50 3.975899ms  p99 10.078867ms  errors 0
+innodb-repeatable-read users  clients=32      7752 commits/s  retries/txn 0.00  p50 3.974754ms  p99 8.202659ms  errors 0
+innodb-repeatable-read users  clients=32      7582 commits/s  retries/txn 0.00  p50 3.973182ms  p99 8.263386ms  errors 0
+innodb-repeatable-read users  clients=32      7764 commits/s  retries/txn 0.00  p50 3.974729ms  p99 8.00807ms  errors 0
+innodb-repeatable-read ledger clients=32      7280 commits/s  retries/txn 0.00  p50 3.954482ms  p99 13.625513ms  errors 0
+audit: ledger data consistent after 58237 transactions
+innodb-repeatable-read ledger clients=32      7152 commits/s  retries/txn 0.00  p50 3.955056ms  p99 14.116431ms  errors 0
+audit: ledger data consistent after 57216 transactions
+innodb-repeatable-read ledger clients=32      7372 commits/s  retries/txn 0.00  p50 3.955816ms  p99 12.257962ms  errors 0
+audit: ledger data consistent after 58973 transactions
+innodb-repeatable-read ledger clients=32      7198 commits/s  retries/txn 0.00  p50 3.97766ms  p99 13.798764ms  errors 0
+audit: ledger data consistent after 57582 transactions
+innodb-repeatable-read ledger clients=32      7351 commits/s  retries/txn 0.00  p50 3.981017ms  p99 12.456548ms  errors 0
+audit: ledger data consistent after 58808 transactions
+innodb-repeatable-read ledger clients=32      7299 commits/s  retries/txn 0.00  p50 3.982766ms  p99 12.18893ms  errors 0
+audit: ledger data consistent after 58394 transactions
+innodb-repeatable-read ledger clients=32      7214 commits/s  retries/txn 0.00  p50 3.982283ms  p99 12.416039ms  errors 0
+audit: ledger data consistent after 57713 transactions
+innodb-repeatable-read ledger clients=32      7428 commits/s  retries/txn 0.00  p50 3.984933ms  p99 12.217635ms  errors 0
+audit: ledger data consistent after 59423 transactions
+innodb-repeatable-read ledger clients=32      7408 commits/s  retries/txn 0.00  p50 3.992959ms  p99 12.25433ms  errors 0
+audit: ledger data consistent after 59265 transactions
+innodb-repeatable-read ledger clients=32       442 commits/s  retries/txn 0.01  p50 71.988386ms  p99 99.844299ms  errors 0
+audit: ledger data consistent after 3539 transactions
+innodb-repeatable-read ledger clients=32       403 commits/s  retries/txn 0.01  p50 78.222319ms  p99 165.565242ms  errors 0
+audit: ledger data consistent after 3224 transactions
+innodb-repeatable-read ledger clients=32       412 commits/s  retries/txn 0.01  p50 76.821899ms  p99 95.546113ms  errors 0
+audit: ledger data consistent after 3293 transactions
+celltnx-row    tpcc   clients=32      2003 commits/s  retries/txn 5.95  p50 6.254733ms  p99 109.71276ms  errors 0
+audit: tpcc data consistent after 16021 transactions
+celltnx-row    tpcc   clients=32      1970 commits/s  retries/txn 6.03  p50 6.28428ms  p99 115.801154ms  errors 0
+audit: tpcc data consistent after 15763 transactions
+celltnx-row    tpcc   clients=32      1997 commits/s  retries/txn 5.92  p50 6.251169ms  p99 112.848987ms  errors 0
+audit: tpcc data consistent after 15975 transactions
+celltnx-row    tpcc   clients=32      4186 commits/s  retries/txn 1.50  p50 4.638983ms  p99 32.103793ms  errors 0
+audit: tpcc data consistent after 33487 transactions
+celltnx-row    tpcc   clients=32      4193 commits/s  retries/txn 1.48  p50 4.679493ms  p99 31.715651ms  errors 0
+audit: tpcc data consistent after 33545 transactions
+celltnx-row    tpcc   clients=32      4189 commits/s  retries/txn 1.47  p50 4.685108ms  p99 31.66507ms  errors 0
+audit: tpcc data consistent after 33513 transactions
+celltnx-row    tpcc   clients=32        74 commits/s  retries/txn 7.08  p50 56.548812ms  p99 4.385918304s  errors 0
+audit: tpcc data consistent after 591 transactions
+celltnx-row    tpcc   clients=32        76 commits/s  retries/txn 7.12  p50 53.863774ms  p99 3.915677896s  errors 0
+audit: tpcc data consistent after 607 transactions
+celltnx-row    tpcc   clients=32        81 commits/s  retries/txn 6.42  p50 69.3575ms  p99 3.084708765s  errors 0
+audit: tpcc data consistent after 647 transactions
+celltnx-row    users  clients=32     11867 commits/s  retries/txn 0.01  p50 2.638027ms  p99 5.105744ms  errors 0
+celltnx-row    users  clients=32     11828 commits/s  retries/txn 0.01  p50 2.637851ms  p99 5.105224ms  errors 0
+celltnx-row    users  clients=32     11736 commits/s  retries/txn 0.01  p50 2.639022ms  p99 5.111066ms  errors 0
+celltnx-row    users  clients=32     11494 commits/s  retries/txn 0.05  p50 2.611632ms  p99 5.288711ms  errors 0
+celltnx-row    users  clients=32     11515 commits/s  retries/txn 0.05  p50 2.610382ms  p99 5.271508ms  errors 0
+celltnx-row    users  clients=32     11490 commits/s  retries/txn 0.05  p50 2.608935ms  p99 5.281769ms  errors 0
+celltnx-row    users  clients=32     11286 commits/s  retries/txn 0.08  p50 2.608603ms  p99 5.31929ms  errors 0
+celltnx-row    users  clients=32     11292 commits/s  retries/txn 0.08  p50 2.607755ms  p99 5.305397ms  errors 0
+celltnx-row    users  clients=32     11310 commits/s  retries/txn 0.08  p50 2.606489ms  p99 5.309533ms  errors 0
+celltnx-row    users  clients=32     11206 commits/s  retries/txn 0.06  p50 2.611627ms  p99 5.30215ms  errors 0
+celltnx-row    users  clients=32     11162 commits/s  retries/txn 0.07  p50 2.610699ms  p99 5.311083ms  errors 0
+celltnx-row    users  clients=32     11154 commits/s  retries/txn 0.07  p50 2.612134ms  p99 5.327075ms  errors 0
+celltnx-row    users  clients=32     11385 commits/s  retries/txn 0.08  p50 2.602351ms  p99 5.294587ms  errors 0
+celltnx-row    users  clients=32     11413 commits/s  retries/txn 0.08  p50 2.601445ms  p99 5.297501ms  errors 0
+celltnx-row    users  clients=32     11439 commits/s  retries/txn 0.08  p50 2.599004ms  p99 5.307389ms  errors 0
+celltnx-row    ledger clients=32      4542 commits/s  retries/txn 3.86  p50 6.019494ms  p99 20.262084ms  errors 0
+audit: ledger data consistent after 36339 transactions
+celltnx-row    ledger clients=32      4555 commits/s  retries/txn 3.86  p50 6.018689ms  p99 20.233238ms  errors 0
+audit: ledger data consistent after 36439 transactions
+celltnx-row    ledger clients=32      4536 commits/s  retries/txn 3.87  p50 6.02532ms  p99 20.12011ms  errors 0
+audit: ledger data consistent after 36289 transactions
+celltnx-row    ledger clients=32      6497 commits/s  retries/txn 0.85  p50 4.570525ms  p99 19.365504ms  errors 0
+audit: ledger data consistent after 51979 transactions
+celltnx-row    ledger clients=32      7181 commits/s  retries/txn 0.84  p50 4.166193ms  p99 10.337796ms  errors 0
+audit: ledger data consistent after 57447 transactions
+celltnx-row    ledger clients=32      7172 commits/s  retries/txn 0.83  p50 4.104879ms  p99 10.339852ms  errors 0
+audit: ledger data consistent after 57372 transactions
+celltnx-row    ledger clients=32      9998 commits/s  retries/txn 0.05  p50 2.706423ms  p99 5.652859ms  errors 0
+audit: ledger data consistent after 79986 transactions
+celltnx-row    ledger clients=32      9967 commits/s  retries/txn 0.05  p50 2.70553ms  p99 5.643299ms  errors 0
+audit: ledger data consistent after 79735 transactions
+celltnx-row    ledger clients=32      9984 commits/s  retries/txn 0.05  p50 2.704962ms  p99 5.654261ms  errors 0
+audit: ledger data consistent after 79874 transactions
+celltnx-row    ledger clients=32       272 commits/s  retries/txn 19.21  p50 86.4979ms  p99 469.960729ms  errors 0
+audit: ledger data consistent after 2179 transactions
+celltnx-row    ledger clients=32       270 commits/s  retries/txn 19.39  p50 83.089872ms  p99 545.840782ms  errors 0
+audit: ledger data consistent after 2156 transactions
+celltnx-row    ledger clients=32       272 commits/s  retries/txn 19.22  p50 85.712446ms  p99 544.804318ms  errors 0
+audit: ledger data consistent after 2179 transactions
+celltnx-cell   tpcc   clients=32      5004 commits/s  retries/txn 2.03  p50 4.86984ms  p99 19.590857ms  errors 0
+audit: tpcc data consistent after 40030 transactions
+celltnx-cell   tpcc   clients=32      4991 commits/s  retries/txn 2.10  p50 4.906532ms  p99 19.909899ms  errors 0
+audit: tpcc data consistent after 39926 transactions
+celltnx-cell   tpcc   clients=32      4946 commits/s  retries/txn 2.13  p50 5.162228ms  p99 20.965506ms  errors 0
+audit: tpcc data consistent after 39567 transactions
+celltnx-cell   tpcc   clients=32      6658 commits/s  retries/txn 0.41  p50 4.461429ms  p99 8.670329ms  errors 0
+audit: tpcc data consistent after 53268 transactions
+celltnx-cell   tpcc   clients=32      6642 commits/s  retries/txn 0.41  p50 4.445524ms  p99 8.654629ms  errors 0
+audit: tpcc data consistent after 53139 transactions
+celltnx-cell   tpcc   clients=32      6608 commits/s  retries/txn 0.40  p50 4.481269ms  p99 8.681332ms  errors 0
+audit: tpcc data consistent after 52865 transactions
+celltnx-cell   tpcc   clients=32       182 commits/s  retries/txn 10.05  p50 83.079286ms  p99 1.178716337s  errors 0
+audit: tpcc data consistent after 1460 transactions
+celltnx-cell   tpcc   clients=32       187 commits/s  retries/txn 9.36  p50 84.701919ms  p99 1.193659582s  errors 0
+audit: tpcc data consistent after 1498 transactions
+celltnx-cell   tpcc   clients=32       181 commits/s  retries/txn 10.31  p50 81.820052ms  p99 1.260305154s  errors 0
+audit: tpcc data consistent after 1449 transactions
+celltnx-cell   users  clients=32     11875 commits/s  retries/txn 0.00  p50 2.644497ms  p99 5.005726ms  errors 0
+celltnx-cell   users  clients=32     11839 commits/s  retries/txn 0.00  p50 2.643738ms  p99 5.051497ms  errors 0
+celltnx-cell   users  clients=32     11848 commits/s  retries/txn 0.00  p50 2.639964ms  p99 5.05298ms  errors 0
+celltnx-cell   users  clients=32     11707 commits/s  retries/txn 0.03  p50 2.617189ms  p99 5.246046ms  errors 0
+celltnx-cell   users  clients=32     11651 commits/s  retries/txn 0.03  p50 2.619694ms  p99 5.234444ms  errors 0
+celltnx-cell   users  clients=32     11617 commits/s  retries/txn 0.03  p50 2.619645ms  p99 5.237688ms  errors 0
+celltnx-cell   users  clients=32     11537 commits/s  retries/txn 0.04  p50 2.614873ms  p99 5.275031ms  errors 0
+celltnx-cell   users  clients=32     11564 commits/s  retries/txn 0.04  p50 2.610282ms  p99 5.261955ms  errors 0
+celltnx-cell   users  clients=32     11580 commits/s  retries/txn 0.04  p50 2.612906ms  p99 5.269726ms  errors 0
+celltnx-cell   users  clients=32     11142 commits/s  retries/txn 0.07  p50 2.61467ms  p99 5.314725ms  errors 0
+celltnx-cell   users  clients=32     11118 commits/s  retries/txn 0.07  p50 2.614811ms  p99 5.333997ms  errors 0
+celltnx-cell   users  clients=32     11149 commits/s  retries/txn 0.06  p50 2.614081ms  p99 5.320485ms  errors 0
+celltnx-cell   users  clients=32     11430 commits/s  retries/txn 0.07  p50 2.603851ms  p99 5.302124ms  errors 0
+celltnx-cell   users  clients=32     11553 commits/s  retries/txn 0.07  p50 2.600815ms  p99 5.267065ms  errors 0
+celltnx-cell   users  clients=32     10895 commits/s  retries/txn 0.07  p50 2.631379ms  p99 6.25492ms  errors 0
+celltnx-cell   ledger clients=32      4563 commits/s  retries/txn 3.87  p50 6.016322ms  p99 20.166354ms  errors 0
+audit: ledger data consistent after 36501 transactions
+celltnx-cell   ledger clients=32      4548 commits/s  retries/txn 3.85  p50 6.022597ms  p99 20.132254ms  errors 0
+audit: ledger data consistent after 36388 transactions
+celltnx-cell   ledger clients=32      4568 commits/s  retries/txn 3.83  p50 6.017995ms  p99 20.184646ms  errors 0
+audit: ledger data consistent after 36546 transactions
+celltnx-cell   ledger clients=32      7176 commits/s  retries/txn 0.84  p50 4.136221ms  p99 10.348718ms  errors 0
+audit: ledger data consistent after 57404 transactions
+celltnx-cell   ledger clients=32      7198 commits/s  retries/txn 0.82  p50 4.114365ms  p99 10.299249ms  errors 0
+audit: ledger data consistent after 57584 transactions
+celltnx-cell   ledger clients=32      7151 commits/s  retries/txn 0.86  p50 4.15023ms  p99 10.365316ms  errors 0
+audit: ledger data consistent after 57209 transactions
+celltnx-cell   ledger clients=32      9984 commits/s  retries/txn 0.05  p50 2.695733ms  p99 5.600751ms  errors 0
+audit: ledger data consistent after 79871 transactions
+celltnx-cell   ledger clients=32      9995 commits/s  retries/txn 0.05  p50 2.705282ms  p99 5.571169ms  errors 0
+audit: ledger data consistent after 79957 transactions
+celltnx-cell   ledger clients=32     10078 commits/s  retries/txn 0.05  p50 2.70787ms  p99 5.550577ms  errors 0
+audit: ledger data consistent after 80625 transactions
+celltnx-cell   ledger clients=32       270 commits/s  retries/txn 19.42  p50 84.298899ms  p99 498.489151ms  errors 0
+audit: ledger data consistent after 2157 transactions
+celltnx-cell   ledger clients=32       268 commits/s  retries/txn 19.62  p50 85.939226ms  p99 496.587454ms  errors 0
+audit: ledger data consistent after 2140 transactions
+celltnx-cell   ledger clients=32       271 commits/s  retries/txn 19.33  p50 84.734393ms  p99 569.348265ms  errors 0
+audit: ledger data consistent after 2169 transactions
+celltnx-cell+delta tpcc   clients=32      6378 commits/s  retries/txn 0.01  p50 4.458959ms  p99 9.195064ms  errors 0
+audit: tpcc data consistent after 51026 transactions
+celltnx-cell+delta tpcc   clients=32      6461 commits/s  retries/txn 0.01  p50 4.432207ms  p99 9.042849ms  errors 0
+audit: tpcc data consistent after 51689 transactions
+celltnx-cell+delta tpcc   clients=32      6445 commits/s  retries/txn 0.01  p50 4.447665ms  p99 8.989281ms  errors 0
+audit: tpcc data consistent after 51558 transactions
+celltnx-cell+delta tpcc   clients=32      6764 commits/s  retries/txn 0.00  p50 4.475797ms  p99 7.88184ms  errors 0
+audit: tpcc data consistent after 54115 transactions
+celltnx-cell+delta tpcc   clients=32      6720 commits/s  retries/txn 0.00  p50 4.500666ms  p99 7.969247ms  errors 0
+audit: tpcc data consistent after 53756 transactions
+celltnx-cell+delta tpcc   clients=32      6741 commits/s  retries/txn 0.00  p50 4.466243ms  p99 8.00399ms  errors 0
+audit: tpcc data consistent after 53925 transactions
+celltnx-cell+delta tpcc   clients=32       299 commits/s  retries/txn 0.03  p50 44.083533ms  p99 902.686804ms  errors 0
+audit: tpcc data consistent after 2393 transactions
+celltnx-cell+delta tpcc   clients=32       306 commits/s  retries/txn 0.02  p50 49.787674ms  p99 730.885688ms  errors 0
+audit: tpcc data consistent after 2449 transactions
+celltnx-cell+delta tpcc   clients=32       311 commits/s  retries/txn 0.03  p50 45.569082ms  p99 748.777703ms  errors 0
+audit: tpcc data consistent after 2489 transactions
+celltnx-cell+delta users  clients=32     11855 commits/s  retries/txn 0.00  p50 2.645958ms  p99 4.939162ms  errors 0
+celltnx-cell+delta users  clients=32     11650 commits/s  retries/txn 0.00  p50 2.652261ms  p99 5.018291ms  errors 0
+celltnx-cell+delta users  clients=32     11816 commits/s  retries/txn 0.00  p50 2.647858ms  p99 4.358866ms  errors 0
+celltnx-cell+delta users  clients=32     11761 commits/s  retries/txn 0.02  p50 2.630646ms  p99 5.193039ms  errors 0
+celltnx-cell+delta users  clients=32     11780 commits/s  retries/txn 0.02  p50 2.625686ms  p99 5.193892ms  errors 0
+celltnx-cell+delta users  clients=32     11651 commits/s  retries/txn 0.02  p50 2.629038ms  p99 5.179351ms  errors 0
+celltnx-cell+delta users  clients=32     11631 commits/s  retries/txn 0.02  p50 2.621885ms  p99 5.229749ms  errors 0
+celltnx-cell+delta users  clients=32     10915 commits/s  retries/txn 0.03  p50 2.653748ms  p99 6.148292ms  errors 0
+celltnx-cell+delta users  clients=32     11648 commits/s  retries/txn 0.03  p50 2.619721ms  p99 5.221906ms  errors 0
+celltnx-cell+delta users  clients=32     11596 commits/s  retries/txn 0.01  p50 2.630502ms  p99 5.240526ms  errors 0
+celltnx-cell+delta users  clients=32     11610 commits/s  retries/txn 0.01  p50 2.631563ms  p99 5.234699ms  errors 0
+celltnx-cell+delta users  clients=32     11554 commits/s  retries/txn 0.01  p50 2.634155ms  p99 5.256908ms  errors 0
+celltnx-cell+delta users  clients=32     11500 commits/s  retries/txn 0.07  p50 2.601634ms  p99 5.279373ms  errors 0
+celltnx-cell+delta users  clients=32     11543 commits/s  retries/txn 0.07  p50 2.599871ms  p99 5.26235ms  errors 0
+celltnx-cell+delta users  clients=32     11517 commits/s  retries/txn 0.07  p50 2.602611ms  p99 5.288711ms  errors 0
+celltnx-cell+delta ledger clients=32     10749 commits/s  retries/txn 0.00  p50 2.920342ms  p99 4.861895ms  errors 0
+audit: ledger data consistent after 85990 transactions
+celltnx-cell+delta ledger clients=32     10668 commits/s  retries/txn 0.00  p50 2.926297ms  p99 5.068856ms  errors 0
+audit: ledger data consistent after 85348 transactions
+celltnx-cell+delta ledger clients=32     10637 commits/s  retries/txn 0.00  p50 2.934831ms  p99 5.112622ms  errors 0
+audit: ledger data consistent after 85093 transactions
+celltnx-cell+delta ledger clients=32     10740 commits/s  retries/txn 0.00  p50 2.922839ms  p99 4.483879ms  errors 0
+audit: ledger data consistent after 85921 transactions
+celltnx-cell+delta ledger clients=32     10724 commits/s  retries/txn 0.00  p50 2.927222ms  p99 4.728526ms  errors 0
+audit: ledger data consistent after 85795 transactions
+celltnx-cell+delta ledger clients=32     10740 commits/s  retries/txn 0.00  p50 2.925736ms  p99 4.930479ms  errors 0
+audit: ledger data consistent after 85920 transactions
+celltnx-cell+delta ledger clients=32     10704 commits/s  retries/txn 0.00  p50 2.937873ms  p99 5.256424ms  errors 0
+audit: ledger data consistent after 85629 transactions
+celltnx-cell+delta ledger clients=32     10771 commits/s  retries/txn 0.00  p50 2.923009ms  p99 5.234678ms  errors 0
+audit: ledger data consistent after 86165 transactions
+celltnx-cell+delta ledger clients=32     10837 commits/s  retries/txn 0.00  p50 2.920988ms  p99 5.117585ms  errors 0
+audit: ledger data consistent after 86694 transactions
+celltnx-cell+delta ledger clients=32      3882 commits/s  retries/txn 0.00  p50 8.123335ms  p99 11.290005ms  errors 0
+audit: ledger data consistent after 31053 transactions
+celltnx-cell+delta ledger clients=32      3840 commits/s  retries/txn 0.00  p50 8.598689ms  p99 11.150831ms  errors 0
+audit: ledger data consistent after 30722 transactions
+celltnx-cell+delta ledger clients=32      3837 commits/s  retries/txn 0.00  p50 8.830196ms  p99 10.872074ms  errors 0
+audit: ledger data consistent after 30696 transactions
+innodb-serializable tpcc   clients=128     2644 commits/s  retries/txn 0.00  p50 48.293642ms  p99 105.471601ms  errors 0
+audit: tpcc data consistent after 21150 transactions
+innodb-serializable tpcc   clients=128     2641 commits/s  retries/txn 0.00  p50 48.293497ms  p99 108.20967ms  errors 0
+audit: tpcc data consistent after 21129 transactions
+innodb-serializable tpcc   clients=128     2634 commits/s  retries/txn 0.00  p50 48.96378ms  p99 110.634043ms  errors 0
+audit: tpcc data consistent after 21071 transactions
+innodb-serializable tpcc   clients=128     6345 commits/s  retries/txn 0.00  p50 16.266918ms  p99 98.606984ms  errors 0
+audit: tpcc data consistent after 50760 transactions
+innodb-serializable tpcc   clients=128     6574 commits/s  retries/txn 0.00  p50 16.026062ms  p99 95.231322ms  errors 0
+audit: tpcc data consistent after 52596 transactions
+innodb-serializable tpcc   clients=128     6504 commits/s  retries/txn 0.00  p50 16.051992ms  p99 101.09193ms  errors 0
+audit: tpcc data consistent after 52029 transactions
+innodb-serializable tpcc   clients=128      142 commits/s  retries/txn 0.00  p50 1.047974502s  p99 1.546830847s  errors 0
+audit: tpcc data consistent after 1139 transactions
+innodb-serializable tpcc   clients=128      144 commits/s  retries/txn 0.00  p50 1.031647001s  p99 1.612262887s  errors 0
+audit: tpcc data consistent after 1151 transactions
+innodb-serializable tpcc   clients=128      141 commits/s  retries/txn 0.00  p50 1.050663463s  p99 1.642301502s  errors 0
+audit: tpcc data consistent after 1130 transactions
+innodb-serializable users  clients=128    27810 commits/s  retries/txn 0.00  p50 3.981891ms  p99 14.118503ms  errors 0
+innodb-serializable users  clients=128    27439 commits/s  retries/txn 0.00  p50 3.988808ms  p99 14.575028ms  errors 0
+innodb-serializable users  clients=128    27479 commits/s  retries/txn 0.00  p50 3.987024ms  p99 14.276276ms  errors 0
+innodb-serializable users  clients=128    27896 commits/s  retries/txn 0.00  p50 3.985992ms  p99 14.143816ms  errors 0
+innodb-serializable users  clients=128    28035 commits/s  retries/txn 0.00  p50 3.984184ms  p99 14.14317ms  errors 0
+innodb-serializable users  clients=128    28012 commits/s  retries/txn 0.00  p50 3.981824ms  p99 13.889264ms  errors 0
+innodb-serializable users  clients=128    28100 commits/s  retries/txn 0.00  p50 3.984348ms  p99 14.003363ms  errors 0
+innodb-serializable users  clients=128    28004 commits/s  retries/txn 0.00  p50 3.986589ms  p99 13.979755ms  errors 0
+innodb-serializable users  clients=128    27885 commits/s  retries/txn 0.00  p50 3.986675ms  p99 13.817097ms  errors 0
+innodb-serializable users  clients=128    27859 commits/s  retries/txn 0.00  p50 3.984231ms  p99 14.14332ms  errors 0
+innodb-serializable users  clients=128    28144 commits/s  retries/txn 0.00  p50 3.984207ms  p99 14.116393ms  errors 0
+innodb-serializable users  clients=128    27701 commits/s  retries/txn 0.00  p50 3.987739ms  p99 14.089501ms  errors 0
+innodb-serializable users  clients=128    28519 commits/s  retries/txn 0.00  p50 3.981976ms  p99 12.918382ms  errors 0
+innodb-serializable users  clients=128    24541 commits/s  retries/txn 0.00  p50 4.360058ms  p99 17.138084ms  errors 0
+innodb-serializable users  clients=128    26579 commits/s  retries/txn 0.00  p50 4.003664ms  p99 18.198554ms  errors 0
+innodb-serializable ledger clients=128     8505 commits/s  retries/txn 0.03  p50 13.860645ms  p99 53.369427ms  errors 0
+audit: ledger data consistent after 68041 transactions
+innodb-serializable ledger clients=128     8294 commits/s  retries/txn 0.02  p50 13.862158ms  p99 56.252609ms  errors 0
+audit: ledger data consistent after 66356 transactions
+innodb-serializable ledger clients=128     8570 commits/s  retries/txn 0.02  p50 13.855207ms  p99 55.766023ms  errors 0
+audit: ledger data consistent after 68558 transactions
+innodb-serializable ledger clients=128    25420 commits/s  retries/txn 0.00  p50 3.984404ms  p99 18.046219ms  errors 0
+audit: ledger data consistent after 203358 transactions
+innodb-serializable ledger clients=128    25917 commits/s  retries/txn 0.00  p50 3.985189ms  p99 17.798674ms  errors 0
+audit: ledger data consistent after 207335 transactions
+innodb-serializable ledger clients=128    25883 commits/s  retries/txn 0.00  p50 3.986217ms  p99 18.009165ms  errors 0
+audit: ledger data consistent after 207064 transactions
+innodb-serializable ledger clients=128    27279 commits/s  retries/txn 0.00  p50 3.992403ms  p99 18.439827ms  errors 0
+audit: ledger data consistent after 218231 transactions
+innodb-serializable ledger clients=128    26935 commits/s  retries/txn 0.00  p50 3.996766ms  p99 18.430174ms  errors 0
+audit: ledger data consistent after 215480 transactions
+innodb-serializable ledger clients=128    26212 commits/s  retries/txn 0.00  p50 3.98716ms  p99 22.018042ms  errors 0
+audit: ledger data consistent after 209700 transactions
+innodb-serializable ledger clients=128      415 commits/s  retries/txn 0.03  p50 312.802069ms  p99 632.285383ms  errors 0
+audit: ledger data consistent after 3317 transactions
+innodb-serializable ledger clients=128      423 commits/s  retries/txn 0.03  p50 308.986408ms  p99 624.002854ms  errors 0
+audit: ledger data consistent after 3381 transactions
+innodb-serializable ledger clients=128      419 commits/s  retries/txn 0.03  p50 311.114517ms  p99 629.558945ms  errors 0
+audit: ledger data consistent after 3353 transactions
+innodb-repeatable-read tpcc   clients=128     3074 commits/s  retries/txn 0.00  p50 15.696559ms  p99 130.348222ms  errors 0
+audit: tpcc data consistent after 24592 transactions
+innodb-repeatable-read tpcc   clients=128     3032 commits/s  retries/txn 0.00  p50 14.252929ms  p99 174.919765ms  errors 0
+audit: tpcc data consistent after 24256 transactions
+innodb-repeatable-read tpcc   clients=128     3019 commits/s  retries/txn 0.00  p50 20.386773ms  p99 152.157059ms  errors 0
+audit: tpcc data consistent after 24151 transactions
+innodb-repeatable-read tpcc   clients=128     7469 commits/s  retries/txn 0.00  p50 9.930143ms  p99 146.185581ms  errors 0
+audit: tpcc data consistent after 59752 transactions
+innodb-repeatable-read tpcc   clients=128     7461 commits/s  retries/txn 0.00  p50 9.693911ms  p99 127.695242ms  errors 0
+audit: tpcc data consistent after 59686 transactions
+innodb-repeatable-read tpcc   clients=128     7373 commits/s  retries/txn 0.00  p50 9.990114ms  p99 123.64979ms  errors 0
+audit: tpcc data consistent after 58985 transactions
+innodb-repeatable-read tpcc   clients=128      155 commits/s  retries/txn 0.00  p50 412.50277ms  p99 2.096345484s  errors 0
+audit: tpcc data consistent after 1238 transactions
+innodb-repeatable-read tpcc   clients=128      157 commits/s  retries/txn 0.00  p50 308.509698ms  p99 2.074791769s  errors 0
+audit: tpcc data consistent after 1259 transactions
+innodb-repeatable-read tpcc   clients=128      152 commits/s  retries/txn 0.00  p50 347.647237ms  p99 2.155058005s  errors 0
+audit: tpcc data consistent after 1213 transactions
+innodb-repeatable-read users  clients=128    28335 commits/s  retries/txn 0.00  p50 3.983528ms  p99 15.699072ms  errors 0
+innodb-repeatable-read users  clients=128    27801 commits/s  retries/txn 0.00  p50 3.986387ms  p99 14.157251ms  errors 0
+innodb-repeatable-read users  clients=128    28096 commits/s  retries/txn 0.00  p50 3.986727ms  p99 13.913104ms  errors 0
+innodb-repeatable-read users  clients=128    28124 commits/s  retries/txn 0.00  p50 3.980546ms  p99 13.812315ms  errors 0
+innodb-repeatable-read users  clients=128    27895 commits/s  retries/txn 0.00  p50 3.990373ms  p99 14.052147ms  errors 0
+innodb-repeatable-read users  clients=128    27883 commits/s  retries/txn 0.00  p50 3.985771ms  p99 14.153673ms  errors 0
+innodb-repeatable-read users  clients=128    27374 commits/s  retries/txn 0.00  p50 3.985546ms  p99 13.92236ms  errors 0
+innodb-repeatable-read users  clients=128    27895 commits/s  retries/txn 0.00  p50 3.985808ms  p99 13.841933ms  errors 0
+innodb-repeatable-read users  clients=128    23516 commits/s  retries/txn 0.00  p50 4.444532ms  p99 19.86482ms  errors 0
+innodb-repeatable-read users  clients=128    27511 commits/s  retries/txn 0.00  p50 3.986437ms  p99 18.14476ms  errors 0
+innodb-repeatable-read users  clients=128    27720 commits/s  retries/txn 0.00  p50 3.985968ms  p99 14.005409ms  errors 0
+innodb-repeatable-read users  clients=128    27851 commits/s  retries/txn 0.00  p50 3.986608ms  p99 14.332914ms  errors 0
+innodb-repeatable-read users  clients=128    28440 commits/s  retries/txn 0.00  p50 3.983267ms  p99 13.670841ms  errors 0
+innodb-repeatable-read users  clients=128    27958 commits/s  retries/txn 0.00  p50 3.982882ms  p99 13.853193ms  errors 0
+innodb-repeatable-read users  clients=128    28508 commits/s  retries/txn 0.00  p50 3.982513ms  p99 13.922463ms  errors 0
+innodb-repeatable-read ledger clients=128     8475 commits/s  retries/txn 0.03  p50 13.857779ms  p99 58.076646ms  errors 0
+audit: ledger data consistent after 67802 transactions
+innodb-repeatable-read ledger clients=128     8345 commits/s  retries/txn 0.03  p50 13.860414ms  p99 61.325299ms  errors 0
+audit: ledger data consistent after 66758 transactions
+innodb-repeatable-read ledger clients=128     8492 commits/s  retries/txn 0.03  p50 13.852835ms  p99 54.786533ms  errors 0
+audit: ledger data consistent after 67932 transactions
+innodb-repeatable-read ledger clients=128    25389 commits/s  retries/txn 0.00  p50 3.982706ms  p99 17.984034ms  errors 0
+audit: ledger data consistent after 203110 transactions
+innodb-repeatable-read ledger clients=128    26088 commits/s  retries/txn 0.00  p50 3.986134ms  p99 16.335217ms  errors 0
+audit: ledger data consistent after 208700 transactions
+innodb-repeatable-read ledger clients=128    25610 commits/s  retries/txn 0.00  p50 4.009834ms  p99 18.462634ms  errors 0
+audit: ledger data consistent after 204877 transactions
+innodb-repeatable-read ledger clients=128    26143 commits/s  retries/txn 0.00  p50 3.986474ms  p99 22.530551ms  errors 0
+audit: ledger data consistent after 209143 transactions
+innodb-repeatable-read ledger clients=128    26862 commits/s  retries/txn 0.00  p50 3.988811ms  p99 18.08391ms  errors 0
+audit: ledger data consistent after 214900 transactions
+innodb-repeatable-read ledger clients=128    25706 commits/s  retries/txn 0.00  p50 3.995713ms  p99 27.961901ms  errors 0
+audit: ledger data consistent after 205648 transactions
+innodb-repeatable-read ledger clients=128      446 commits/s  retries/txn 0.03  p50 291.831473ms  p99 597.28449ms  errors 0
+audit: ledger data consistent after 3569 transactions
+innodb-repeatable-read ledger clients=128      438 commits/s  retries/txn 0.03  p50 295.486083ms  p99 603.732849ms  errors 0
+audit: ledger data consistent after 3502 transactions
+innodb-repeatable-read ledger clients=128      416 commits/s  retries/txn 0.03  p50 315.937423ms  p99 638.293677ms  errors 0
+audit: ledger data consistent after 3329 transactions
+celltnx-cell+delta tpcc   clients=128     9066 commits/s  retries/txn 0.02  p50 6.410668ms  p99 105.283462ms  errors 0
+audit: tpcc data consistent after 72526 transactions
+celltnx-cell+delta tpcc   clients=128     8930 commits/s  retries/txn 0.02  p50 6.180448ms  p99 116.569036ms  errors 0
+audit: tpcc data consistent after 71443 transactions
+celltnx-cell+delta tpcc   clients=128     8781 commits/s  retries/txn 0.02  p50 6.215366ms  p99 124.323279ms  errors 0
+audit: tpcc data consistent after 70250 transactions
+celltnx-cell+delta tpcc   clients=128    11226 commits/s  retries/txn 0.02  p50 7.756988ms  p99 55.844474ms  errors 0
+audit: tpcc data consistent after 89811 transactions
+celltnx-cell+delta tpcc   clients=128    11087 commits/s  retries/txn 0.02  p50 7.862182ms  p99 56.540303ms  errors 0
+audit: tpcc data consistent after 88695 transactions
+celltnx-cell+delta tpcc   clients=128    11130 commits/s  retries/txn 0.02  p50 7.727082ms  p99 57.159717ms  errors 0
+audit: tpcc data consistent after 89037 transactions
+celltnx-cell+delta tpcc   clients=128      372 commits/s  retries/txn 0.16  p50 66.758287ms  p99 3.167930647s  errors 0
+audit: tpcc data consistent after 2975 transactions
+celltnx-cell+delta tpcc   clients=128      379 commits/s  retries/txn 0.15  p50 69.046285ms  p99 2.827225583s  errors 0
+audit: tpcc data consistent after 3032 transactions
+celltnx-cell+delta tpcc   clients=128      374 commits/s  retries/txn 0.16  p50 65.275985ms  p99 2.923199418s  errors 0
+audit: tpcc data consistent after 2993 transactions
+celltnx-cell+delta users  clients=128    35713 commits/s  retries/txn 0.01  p50 3.040755ms  p99 6.140737ms  errors 0
+celltnx-cell+delta users  clients=128    36512 commits/s  retries/txn 0.01  p50 3.015374ms  p99 6.10665ms  errors 0
+celltnx-cell+delta users  clients=128    36774 commits/s  retries/txn 0.01  p50 2.991382ms  p99 6.24033ms  errors 0
+celltnx-cell+delta users  clients=128    35771 commits/s  retries/txn 0.07  p50 3.014472ms  p99 6.192288ms  errors 0
+celltnx-cell+delta users  clients=128    35370 commits/s  retries/txn 0.07  p50 3.04394ms  p99 6.369767ms  errors 0
+celltnx-cell+delta users  clients=128    34651 commits/s  retries/txn 0.07  p50 3.073524ms  p99 6.672369ms  errors 0
+celltnx-cell+delta users  clients=128    34724 commits/s  retries/txn 0.09  p50 3.054711ms  p99 6.396159ms  errors 0
+celltnx-cell+delta users  clients=128    34713 commits/s  retries/txn 0.09  p50 3.067113ms  p99 6.755827ms  errors 0
+celltnx-cell+delta users  clients=128    35058 commits/s  retries/txn 0.09  p50 3.05382ms  p99 6.62708ms  errors 0
+celltnx-cell+delta users  clients=128    34099 commits/s  retries/txn 0.02  p50 3.117701ms  p99 6.454124ms  errors 0
+celltnx-cell+delta users  clients=128    33829 commits/s  retries/txn 0.02  p50 3.150528ms  p99 6.500417ms  errors 0
+celltnx-cell+delta users  clients=128    34116 commits/s  retries/txn 0.02  p50 3.1245ms  p99 6.521143ms  errors 0
+celltnx-cell+delta users  clients=128    33923 commits/s  retries/txn 0.24  p50 3.079736ms  p99 8.131523ms  errors 0
+celltnx-cell+delta users  clients=128    33372 commits/s  retries/txn 0.25  p50 3.190905ms  p99 8.22822ms  errors 0
+celltnx-cell+delta users  clients=128    30140 commits/s  retries/txn 0.25  p50 4.277707ms  p99 16.65383ms  errors 0
+celltnx-cell+delta ledger clients=128    27420 commits/s  retries/txn 0.00  p50 4.594523ms  p99 6.770976ms  errors 0
+audit: ledger data consistent after 219359 transactions
+celltnx-cell+delta ledger clients=128    26846 commits/s  retries/txn 0.00  p50 4.637103ms  p99 7.947342ms  errors 0
+audit: ledger data consistent after 214764 transactions
+celltnx-cell+delta ledger clients=128    27169 commits/s  retries/txn 0.00  p50 4.606693ms  p99 7.740863ms  errors 0
+audit: ledger data consistent after 217355 transactions
+celltnx-cell+delta ledger clients=128    27101 commits/s  retries/txn 0.00  p50 4.624948ms  p99 7.469504ms  errors 0
+audit: ledger data consistent after 216807 transactions
+celltnx-cell+delta ledger clients=128    27544 commits/s  retries/txn 0.00  p50 4.566051ms  p99 7.547338ms  errors 0
+audit: ledger data consistent after 220353 transactions
+celltnx-cell+delta ledger clients=128    27034 commits/s  retries/txn 0.00  p50 4.671864ms  p99 7.056172ms  errors 0
+audit: ledger data consistent after 216268 transactions
+celltnx-cell+delta ledger clients=128    27602 commits/s  retries/txn 0.00  p50 4.640895ms  p99 7.174566ms  errors 0
+audit: ledger data consistent after 220818 transactions
+celltnx-cell+delta ledger clients=128    27429 commits/s  retries/txn 0.00  p50 4.640222ms  p99 7.747883ms  errors 0
+audit: ledger data consistent after 219431 transactions
+celltnx-cell+delta ledger clients=128    27866 commits/s  retries/txn 0.00  p50 4.604285ms  p99 6.918639ms  errors 0
+audit: ledger data consistent after 222926 transactions
+celltnx-cell+delta ledger clients=128    14488 commits/s  retries/txn 0.00  p50 8.915429ms  p99 11.451806ms  errors 0
+audit: ledger data consistent after 115907 transactions
+celltnx-cell+delta ledger clients=128    14476 commits/s  retries/txn 0.00  p50 8.880855ms  p99 11.598381ms  errors 0
+audit: ledger data consistent after 115808 transactions
+celltnx-cell+delta ledger clients=128    14592 commits/s  retries/txn 0.00  p50 8.851768ms  p99 11.554758ms  errors 0
+audit: ledger data consistent after 116736 transactions

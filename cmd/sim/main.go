@@ -5,6 +5,7 @@
 //	sim -seeds 30000             sweep seeds [start, start+30000)
 //	sim -soak                    sweep random seeds until interrupted
 //	sim -bug gc-eager -seeds N   self-test (needs -tags simbugs)
+//	sim -seeds 10000 -golden F   write each seed's outcome to F, for the C++ port
 package main
 
 import (
@@ -37,6 +38,7 @@ func main() {
 	interleave := flag.Float64("interleave", -1, "chance of switching at each fine-grained interleave point (default: drawn per seed)")
 	bug := flag.String("bug", "", "enable a deliberate bug; the sweep must find it")
 	det := flag.Int("det", 10, "rerun every Nth seed to check determinism (0 disables)")
+	golden := flag.String("golden", "", "write each seed's trace, steps, crashes, failure and parameters to this file, sorted by seed")
 	flag.Parse()
 
 	cfg := sim.Config{Workload: *wl, Mode: *mode, Durable: *durable, CommitDelay: *commitDelay, Interleave: *interleave}
@@ -83,6 +85,7 @@ func main() {
 		ran      int
 		crashes  int
 		failures []sim.Result
+		results  []sim.Result
 		nondet   []uint64
 		total    workload.Stats
 		steps    int
@@ -119,6 +122,9 @@ func main() {
 				if r.Err != nil {
 					failures = append(failures, r)
 				}
+				if *golden != "" {
+					results = append(results, r)
+				}
 				if !deterministic {
 					nondet = append(nondet, s)
 				}
@@ -141,6 +147,12 @@ func main() {
 	sort.Strings(keys)
 	for _, k := range keys {
 		fmt.Printf("  %-29s %6d seeds\n", k, cover[k])
+	}
+	if *golden != "" {
+		if err := writeGolden(*golden, results); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
 	}
 	if *det > 0 {
 		fmt.Printf("determinism: %d seeds rerun, %d mismatches %v\n", (ran+*det-1) / *det, len(nondet), nondet)
@@ -165,6 +177,21 @@ func main() {
 	if len(failures) > 0 || len(nondet) > 0 {
 		os.Exit(1)
 	}
+}
+
+// writeGolden writes one line per seed, sorted by seed: its trace, steps,
+// crashes, whether it failed, and its parameters. The C++ simulator writes
+// the same format, so a diff shows the first seed where the two disagree.
+func writeGolden(path string, results []sim.Result) error {
+	sort.Slice(results, func(i, j int) bool { return results[i].Seed < results[j].Seed })
+	f, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	for _, r := range results {
+		fmt.Fprintf(f, "%d %#x %d %d %v %s\n", r.Seed, r.Trace, r.Steps, r.Crashes, r.Err != nil, r.Params)
+	}
+	return f.Close()
 }
 
 func firstLines(s string, n int) string {

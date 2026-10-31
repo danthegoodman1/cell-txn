@@ -1,0 +1,46 @@
+# A conflict found at COMMIT reaches the client as ER_LOCK_DEADLOCK (1213),
+# the server rolls the transaction back, and the session works afterward.
+# Spike 0H in PLAN-MYSQL.md.
+
+CREATE TABLE users (id INT PRIMARY KEY, name VARCHAR(40), email VARCHAR(60), wallet INT NOT NULL) ENGINE=CELLTNX;
+INSERT INTO users VALUES (1, 'ann', 'a@x', 10), (2, 'bob', 'b@x', 20);
+
+connect (con1, localhost, root,,);
+connect (con2, localhost, root,,);
+
+--echo # SPEC scenario 2: con1 read A.email; con2 writes A.email and commits first.
+connection con1;
+BEGIN;
+SELECT email FROM users WHERE id = 1;
+UPDATE users SET name = 'x' WHERE id = 2;
+connection con2;
+UPDATE users SET email = 'q@x' WHERE id = 1;
+connection con1;
+--error ER_LOCK_DEADLOCK
+COMMIT;
+SHOW WARNINGS;
+--echo # The failed transaction's write is gone and the session continues.
+SELECT * FROM users ORDER BY id;
+UPDATE users SET name = 'y' WHERE id = 2;
+SELECT name FROM users WHERE id = 2;
+
+--echo # Two transactions read and rewrite one cell: the second to commit conflicts.
+connection con1;
+BEGIN;
+SELECT wallet FROM users WHERE id = 1;
+connection con2;
+BEGIN;
+SELECT wallet FROM users WHERE id = 1;
+UPDATE users SET wallet = 11 WHERE id = 1;
+connection con1;
+UPDATE users SET wallet = 12 WHERE id = 1;
+COMMIT;
+connection con2;
+--error ER_LOCK_DEADLOCK
+COMMIT;
+SELECT wallet FROM users WHERE id = 1;
+
+disconnect con1;
+disconnect con2;
+connection default;
+DROP TABLE users;

@@ -4,6 +4,11 @@
 //
 //	sqlbench -dsn 'root@tcp(127.0.0.1:3307)/' -workload tpcc -warehouses 1 -setup
 //	sqlbench -dsn 'root@tcp(127.0.0.1:3308)/' -isolation SERIALIZABLE ...
+//	sqlbench -workload ledger -hot 1 -setup -audit ...
+//
+// The ledger workload moves money between accounts, each transfer touching
+// a hot account: two balance updates and a ledger entry in one
+// transaction. -audit reconciles every balance with the ledger afterward.
 package main
 
 import (
@@ -40,6 +45,9 @@ type config struct {
 	isolation  string
 	disjoint   float64
 	prepare    bool
+	engine     string
+	hot        int
+	audit      bool
 }
 
 func main() {
@@ -48,7 +56,7 @@ func main() {
 	label := flag.String("label", "", "system label for the report")
 	setup := flag.Bool("setup", false, "create and load the schema first")
 	csvPath := flag.String("csv", "", "append results to this CSV file")
-	flag.StringVar(&c.workload, "workload", "tpcc", "tpcc or users")
+	flag.StringVar(&c.workload, "workload", "tpcc", "tpcc, users or ledger")
 	flag.IntVar(&c.clients, "clients", 32, "concurrent clients")
 	flag.DurationVar(&c.duration, "duration", 10*time.Second, "measured run time")
 	flag.IntVar(&c.warehouses, "warehouses", 1, "tpcc: warehouses")
@@ -56,12 +64,15 @@ func main() {
 	flag.IntVar(&c.customers, "customers", 300, "tpcc: customers per district")
 	flag.IntVar(&c.items, "items", 10000, "tpcc: items")
 	flag.IntVar(&c.lines, "lines", 10, "tpcc: max order lines")
-	flag.IntVar(&c.rows, "rows", 1000, "users: rows")
+	flag.IntVar(&c.rows, "rows", 1000, "users: rows; ledger: accounts")
+	flag.IntVar(&c.hot, "hot", 1, "ledger: hot accounts, one of which every transfer pays or charges; 0 picks both accounts uniformly")
+	flag.BoolVar(&c.audit, "audit", false, "check the data after the run: ledger balances against the ledger, or TPC-C consistency conditions 1–4")
 	flag.Float64Var(&c.theta, "theta", 0.9, "users: Zipf skew")
 	flag.DurationVar(&c.think, "think", 0, "pause between statements inside a transaction")
 	flag.StringVar(&c.isolation, "isolation", "", "transaction isolation for every connection (MySQL)")
 	flag.Float64Var(&c.disjoint, "disjoint", 0.5, "users: share of email updates; the rest touch wallet, the same column")
 	flag.BoolVar(&c.prepare, "prepare", false, "send statements with arguments as server-side prepared statements")
+	flag.StringVar(&c.engine, "engine", "", "storage engine for the created tables (MySQL), e.g. CELLTNX or InnoDB")
 	flag.Parse()
 
 	db, err := open(*dsn, "", c)
@@ -80,16 +91,26 @@ func main() {
 	r := run(db, c)
 	fmt.Printf("%-14s %-6s clients=%-3d %8.0f commits/s  retries/txn %.2f  p50 %v  p99 %v  errors %d\n",
 		*label, c.workload, c.clients, r.rate, r.retries, r.p50, r.p99, r.errors)
+	if c.audit {
+		if err := audit(db, c, r); err != nil {
+			fail(fmt.Errorf("audit: %w", err))
+		}
+		fmt.Printf("audit: %s data consistent after %d transactions\n", c.workload, r.done)
+	}
 	if *csvPath != "" {
 		f, err := os.OpenFile(*csvPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
 		if err != nil {
 			fail(err)
 		}
 		if st, _ := f.Stat(); st.Size() == 0 {
-			fmt.Fprintln(f, "system,workload,warehouses,theta,disjoint,clients,think_ms,commits_per_s,retries_per_txn,p50_ms,p99_ms,errors")
+			fmt.Fprintln(f, "system,workload,warehouses,theta,disjoint,clients,think_ms,commits_per_s,retries_per_txn,p50_ms,p99_ms,errors,hot")
 		}
-		fmt.Fprintf(f, "%s,%s,%d,%.2f,%.2f,%d,%.1f,%.0f,%.3f,%.2f,%.2f,%d\n", *label, c.workload, c.warehouses, c.theta, c.disjoint, c.clients,
-			float64(c.think)/float64(time.Millisecond), r.rate, r.retries, ms(r.p50), ms(r.p99), r.errors)
+		hot := "" // ledger only
+		if c.workload == "ledger" {
+			hot = fmt.Sprint(c.hot)
+		}
+		fmt.Fprintf(f, "%s,%s,%d,%.2f,%.2f,%d,%.1f,%.0f,%.3f,%.2f,%.2f,%d,%s\n", *label, c.workload, c.warehouses, c.theta, c.disjoint, c.clients,
+			float64(c.think)/float64(time.Millisecond), r.rate, r.retries, ms(r.p50), ms(r.p99), r.errors, hot)
 		f.Close()
 	}
 }
@@ -125,11 +146,18 @@ func open(dsn, dbName string, c config) (*sql.DB, error) {
 func load(db *sql.DB, c config) error {
 	ctx := context.Background()
 	stmts := []string{"DROP DATABASE IF EXISTS bench", "CREATE DATABASE bench", "USE bench"}
+	if c.engine != "" {
+		stmts = append(stmts, "SET SESSION default_storage_engine = "+c.engine)
+	}
 	switch c.workload {
 	case "users":
 		stmts = append(stmts,
 			"CREATE TABLE users (id INT PRIMARY KEY, name VARCHAR(40), email VARCHAR(60), wallet INT NOT NULL, CHECK (wallet >= 0))",
 			"CREATE TABLE audit (id BIGINT PRIMARY KEY, uid INT, email VARCHAR(60))")
+	case "ledger":
+		stmts = append(stmts,
+			"CREATE TABLE accounts (id INT PRIMARY KEY, balance BIGINT NOT NULL, opening BIGINT NOT NULL, CHECK (balance >= 0))",
+			"CREATE TABLE entries (id BIGINT PRIMARY KEY, payer INT NOT NULL, payee INT NOT NULL, amount INT NOT NULL)")
 	default:
 		stmts = append(stmts,
 			"CREATE TABLE warehouse (w_id INT PRIMARY KEY, w_tax INT, w_ytd BIGINT, w_name VARCHAR(20))",
@@ -190,6 +218,17 @@ func load(db *sql.DB, c config) error {
 			rows = append(rows, []any{i, fmt.Sprintf("n%d", i), fmt.Sprintf("e%d", i), 1000})
 		}
 		return ins("users", rows)
+	case "ledger":
+		// Hot accounts open with enough to cover any run; cold ones can
+		// run dry, so overdrafts happen and the CHECK rejects them.
+		for i := range c.rows {
+			opening := 1_000
+			if i < c.hot {
+				opening = 1_000_000_000
+			}
+			rows = append(rows, []any{i, opening, opening})
+		}
+		return ins("accounts", rows)
 	}
 	for i := 1; i <= c.items; i++ {
 		rows = append(rows, []any{i, 1 + r.IntN(100)})
@@ -227,9 +266,10 @@ func load(db *sql.DB, c config) error {
 // --- running ---
 
 type result struct {
-	rate, retries float64
-	p50, p99      time.Duration
-	errors        int64
+	rate, retries  float64
+	p50, p99       time.Duration
+	errors         int64
+	done, rejected int64 // transactions finished, and those a CHECK rejected
 }
 
 // checkViolation reports a CHECK constraint failure, a business outcome:
@@ -247,7 +287,7 @@ func retryable(err error) bool {
 
 func run(db *sql.DB, c config) result {
 	deadline := time.Now().Add(c.duration)
-	var commits, retries, errs atomic.Int64
+	var commits, retries, errs, rejected atomic.Int64
 	var mu sync.Mutex
 	var lats []time.Duration
 	var wg sync.WaitGroup
@@ -271,7 +311,15 @@ func run(db *sql.DB, c config) result {
 				ok := false
 				for {
 					err := tx(ctx)
-					if err == nil || errors.Is(err, errRollback) || checkViolation(err) {
+					if err == nil || errors.Is(err, errRollback) {
+						ok = true
+						break
+					}
+					if checkViolation(err) {
+						// MySQL fails only the statement; the transaction
+						// must not survive to commit its other statements.
+						conn.ExecContext(ctx, "ROLLBACK")
+						rejected.Add(1)
 						ok = true
 						break
 					}
@@ -309,6 +357,7 @@ func run(db *sql.DB, c config) result {
 		retries: float64(retries.Load()) / max(1, float64(n)),
 		p50:     q(0.5), p99: q(0.99),
 		errors: errs.Load(),
+		done:   n, rejected: rejected.Load(),
 	}
 }
 
@@ -419,8 +468,11 @@ func scan(rows *sql.Rows, dst ...any) (bool, error) {
 }
 
 func (cl *client) next() func(context.Context) error {
-	if cl.c.workload == "users" {
+	switch cl.c.workload {
+	case "users":
 		return cl.usersTxn()
+	case "ledger":
+		return cl.transfer()
 	}
 	if cl.r.IntN(88) < 45 {
 		return cl.newOrder()
@@ -466,6 +518,105 @@ func (cl *client) usersTxn() func(context.Context) error {
 			})
 		}
 	}
+}
+
+// transfer moves 1–100 between a hot account and a cold one, in either
+// direction, recording the movement in the ledger.
+func (cl *client) transfer() func(context.Context) error {
+	c, r := cl.c, cl.r
+	var payer, payee int
+	if c.hot == 0 {
+		payer = r.IntN(c.rows)
+		payee = (payer + 1 + r.IntN(c.rows-1)) % c.rows
+	} else {
+		payer, payee = r.IntN(c.hot), c.hot+r.IntN(c.rows-c.hot)
+		if r.IntN(2) == 0 {
+			payer, payee = payee, payer
+		}
+	}
+	amount := 1 + r.IntN(100)
+	id := cl.uniq()
+	return func(ctx context.Context) error {
+		return cl.txn(ctx, func(_ func(string, ...any) *sql.Rows, x func(string, ...any) error) error {
+			if err := x("UPDATE accounts SET balance = balance - ? WHERE id = ?", amount, payer); err != nil {
+				return err
+			}
+			if err := x("UPDATE accounts SET balance = balance + ? WHERE id = ?", amount, payee); err != nil {
+				return err
+			}
+			return x("INSERT INTO entries VALUES (?, ?, ?, ?)", id, payer, payee, amount)
+		})
+	}
+}
+
+// audit checks the data after a run. Ledger: no balance is negative, every
+// balance equals its opening plus credits minus debits in the ledger, and
+// the ledger holds exactly the transfers that committed. TPC-C: consistency
+// conditions 1–4 of the specification, which with no Delivery transactions
+// mean every new order is still in new_order.
+func audit(db *sql.DB, c config, r result) error {
+	ctx := context.Background()
+	one := func(q string) (int64, error) {
+		var n sql.NullInt64
+		err := db.QueryRowContext(ctx, q).Scan(&n)
+		return n.Int64, err
+	}
+	var checks []check
+	switch c.workload {
+	case "tpcc":
+		checks = []check{
+			{"condition 1: W_YTD = sum(D_YTD)", `SELECT COUNT(*) FROM warehouse w
+				JOIN (SELECT d_w_id, SUM(d_ytd) AS s FROM district GROUP BY d_w_id) d ON d.d_w_id = w.w_id
+				WHERE w.w_ytd <> d.s`, 0},
+			{"condition 2: D_NEXT_O_ID - 1 = max(O_ID) = max(NO_O_ID)", `SELECT COUNT(*) FROM district d
+				LEFT JOIN (SELECT o_w_id, o_d_id, MAX(o_id) AS m FROM orders GROUP BY o_w_id, o_d_id) o
+				  ON o.o_w_id = d.d_w_id AND o.o_d_id = d.d_id
+				LEFT JOIN (SELECT no_w_id, no_d_id, MAX(no_o_id) AS m FROM new_order GROUP BY no_w_id, no_d_id) n
+				  ON n.no_w_id = d.d_w_id AND n.no_d_id = d.d_id
+				WHERE d.d_next_o_id - 1 <> COALESCE(o.m, 0) OR d.d_next_o_id - 1 <> COALESCE(n.m, 0)`, 0},
+			{"condition 3: new orders contiguous", `SELECT COUNT(*) FROM (SELECT MAX(no_o_id) - MIN(no_o_id) + 1 AS span, COUNT(*) AS n
+				FROM new_order GROUP BY no_w_id, no_d_id) x WHERE span <> n`, 0},
+			{"condition 4: sum(O_OL_CNT) = count(order lines)", `SELECT COUNT(*) FROM
+				(SELECT o_w_id, o_d_id, SUM(o_ol_cnt) AS s FROM orders GROUP BY o_w_id, o_d_id) o
+				LEFT JOIN (SELECT ol_w_id, ol_d_id, COUNT(*) AS n FROM order_line GROUP BY ol_w_id, ol_d_id) l
+				  ON l.ol_w_id = o.o_w_id AND l.ol_d_id = o.o_d_id
+				WHERE o.s <> COALESCE(l.n, 0)`, 0},
+		}
+	case "ledger":
+		checks = ledgerChecks(r)
+	default:
+		return fmt.Errorf("no audit for workload %s", c.workload)
+	}
+	for _, ch := range checks {
+		got, err := one(ch.q)
+		if err != nil {
+			return fmt.Errorf("%s: %w", ch.what, err)
+		}
+		if got != ch.want {
+			return fmt.Errorf("%s: got %d, want %d", ch.what, got, ch.want)
+		}
+	}
+	return nil
+}
+
+type check struct {
+	what, q string
+	want    int64
+}
+
+func ledgerChecks(r result) []check {
+	checks := []check{
+		{"negative balances", "SELECT COUNT(*) FROM accounts WHERE balance < 0", 0},
+		{"money created or destroyed", "SELECT SUM(balance) - SUM(opening) FROM accounts", 0},
+		{"balances that differ from the ledger", `SELECT COUNT(*) FROM accounts a
+			LEFT JOIN (SELECT payee AS id, SUM(amount) AS s FROM entries GROUP BY payee) cr ON cr.id = a.id
+			LEFT JOIN (SELECT payer AS id, SUM(amount) AS s FROM entries GROUP BY payer) dr ON dr.id = a.id
+			WHERE a.balance <> a.opening + COALESCE(cr.s, 0) - COALESCE(dr.s, 0)`, 0},
+	}
+	if r.errors == 0 {
+		checks = append(checks, check{"ledger entries against committed transfers", "SELECT COUNT(*) FROM entries", r.done - r.rejected})
+	}
+	return checks
 }
 
 func (cl *client) newOrder() func(context.Context) error {

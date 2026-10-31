@@ -1,2 +1,5 @@
 .benchdata/
 *.csv
+cpp/build/
+cpp/sim/golden.txt
+!bench/results/**/*.csv

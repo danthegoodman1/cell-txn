@@ -1,0 +1,46 @@
+# Tables survive a restart: rows, secondary indexes, CHECKs and the
+# auto-increment counter, across renames, TRUNCATE and DROP.
+
+CREATE TABLE users (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(40), email VARCHAR(60),
+  wallet INT NOT NULL, UNIQUE KEY (email), KEY (name), CHECK (wallet >= 0)) ENGINE=CELLTNX;
+INSERT INTO users (name, email, wallet) VALUES ('ann', 'a@x', 10), ('bob', 'b@x', 20), ('cy', 'c@x', 30);
+UPDATE users SET wallet = wallet + 5 WHERE id = 2;
+DELETE FROM users WHERE id = 3;
+CREATE TABLE gone (id INT PRIMARY KEY) ENGINE=CELLTNX;
+INSERT INTO gone VALUES (1), (2);
+CREATE TABLE emptied (id INT PRIMARY KEY) ENGINE=CELLTNX;
+INSERT INTO emptied VALUES (1);
+TRUNCATE TABLE emptied;
+INSERT INTO emptied VALUES (7);
+CREATE TABLE before_rename (id INT PRIMARY KEY, v BLOB) ENGINE=CELLTNX;
+INSERT INTO before_rename VALUES (1, REPEAT('x', 5000)), (2, NULL);
+RENAME TABLE before_rename TO renamed;
+CREATE TABLE keyless (a INT, b VARCHAR(10)) ENGINE=CELLTNX;
+INSERT INTO keyless VALUES (1, 'one'), (1, 'one'), (NULL, NULL);
+
+--source include/restart_mysqld.inc
+
+SELECT * FROM users ORDER BY id;
+SELECT id FROM users WHERE email = 'b@x';
+SELECT id FROM users FORCE INDEX (name) WHERE name = 'ann';
+--error ER_DUP_ENTRY
+INSERT INTO users (name, email, wallet) VALUES ('dup', 'a@x', 1);
+--error ER_CHECK_CONSTRAINT_VIOLATED
+UPDATE users SET wallet = -1 WHERE id = 1;
+INSERT INTO users (name, email, wallet) VALUES ('dee', 'd@x', 40);
+SELECT id, name FROM users WHERE name = 'dee';
+SELECT * FROM emptied;
+SELECT id, LENGTH(v) FROM renamed ORDER BY id;
+SELECT * FROM keyless ORDER BY a, b;
+INSERT INTO keyless VALUES (2, 'two');
+SELECT COUNT(*) FROM keyless;
+DROP TABLE gone;
+CREATE TABLE gone (id INT PRIMARY KEY) ENGINE=CELLTNX;
+INSERT INTO gone VALUES (3);
+
+--source include/restart_mysqld.inc
+
+SELECT * FROM gone;
+SELECT COUNT(*) FROM keyless;
+SELECT id, name FROM users ORDER BY id;
+DROP TABLE users, gone, emptied, renamed, keyless;
