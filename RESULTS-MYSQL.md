@@ -1,5 +1,24 @@
 # MySQL engine results
 
+## Summary
+
+Every commit syncs to disk before it is acknowledged. InnoDB runs at SERIALIZABLE; lionturtle cell+delta is `celltnx` in its cell+delta mode, storing to lionturtle. 128 clients; transactions per second.
+
+| Workload | InnoDB SERIALIZABLE | lionturtle cell+delta | Speedup |
+|---|---|---|---|
+| Hot account, 1 ms pause between statements | 419 | 14,416 | **34×** |
+| TPC-C, 1 warehouse | 2,627 | 9,159 | **3.5×** |
+| Hot account | 8,411 | 27,288 | **3.2×** |
+| TPC-C, 4 warehouses | 6,483 | 11,216 | **1.7×** |
+| Users, Zipf-skewed rows | 26,525–28,593 | 33,011–36,344 | **1.2–1.3×** |
+| Uniform transfers | 26,035 | 27,650 | **1.1×** |
+
+- **Contention sets the gap.** InnoDB holds a hot row's lock from the UPDATE to commit, so transfers through one account run one at a time, and pauses inside the transaction stretch each turn. Deltas commute, so `cell+delta` runs a hot account as fast as uniform transfers, with no retries.
+- **Without contention, both engines wait on the drive.** Each commit waits for a flush, which averages 2.4 ms on this drive (4 KiB `fdatasync`), and both engines batch concurrent commits into each flush. Uniform transfers come within 6% at 128 clients; at 32, `cell+delta` leads by 1.5×.
+- **Without per-commit fsync**, the hot account reaches 15× InnoDB at 256 clients ([Clients](#clients)).
+
+## Setup
+
 Measured 2026-10-31 on one machine: an Intel Core Ultra 9 285 (24 cores), 125 GB of RAM and a Micron 2 TB NVMe drive with ext4, running Linux 7.0. MySQL 8.4.13 is built from source (RelWithDebInfo, GCC 15.2) by `bench/build-mysql.sh`, with `ha_celltnx.so` loaded beside InnoDB in the same `mysqld`. `bench/compare-mysql.sh` starts a fresh server for every configuration with identical flags and drives it with `cmd/sqlbench` over TCP from the same machine. Each point is the median of three 8-second runs; the median run-to-run spread is 2%, and the largest are InnoDB's under fsync (up to 38%).
 
 InnoDB runs at SERIALIZABLE and REPEATABLE READ. `celltnx` runs in its three modes: `row` tracks whole rows, `cell` tracks (row, column) cells, and `cell+delta` also lets increments commute. Every mode queues `SELECT … FOR UPDATE` behind advisory row locks (`ENGINE.md`); the `-nowait` rows turn that off. Retries per transaction appear in parentheses where they are nonzero; InnoDB retries fewer than 0.1 per transaction everywhere.
@@ -74,7 +93,7 @@ InnoDB with `innodb_flush_log_at_trx_commit=1`; `celltnx` with `celltnx_sync=ON`
 
 At 128 clients and 1 hot, p99 is 62 ms for InnoDB and 7.2 ms for `cell+delta`; with pauses, 630 ms against 11 ms.
 
-A hot account costs `cell+delta` nothing: at every client count and both fsync settings, 1 hot runs within 2% of uniform. InnoDB holds the hot row's lock from its UPDATE until commit, so transfers through one account run one at a time, and pauses or an fsync inside that window divide throughput directly. Without deltas, `row` and `cell` fare worse than InnoDB on a hot row: every concurrent transfer conflicts on the balance, and an aborted transfer reruns all three statements.
+A hot account costs `cell+delta` nothing: at every client count and both fsync settings, 1 hot runs within 2% of uniform. InnoDB holds the hot row's lock from its UPDATE until commit, so transfers through one account run one at a time, and pauses inside that window divide throughput directly. Both engines make a commit visible and release its locks before syncing it, so fsync leaves InnoDB's hot row alone: at 128 clients, 8,411 transfers/s with fsync and 8,653 without. Without deltas, `row` and `cell` fare worse than InnoDB on a hot row: every concurrent transfer conflicts on the balance, and where InnoDB makes a transfer wait its turn, `celltnx` aborts it at commit, and the transfer sleeps up to 1 ms (`sqlbench`'s backoff) and reruns all three statements. Under fsync at 32 clients, InnoDB's clients spend most of their time waiting for syncs, so few contend for the lock at once and 1 hot matches uniform; `row` and `cell` still retry about four times per transfer, and that cost adds to the sync wait.
 
 ## TPC-C and users
 
