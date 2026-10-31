@@ -1,0 +1,9 @@
+top - 15:32:33 up  2:08,  1 user,  load average: 27.97, 25.17, 17.64
+Tasks: 544 total,   1 running, 543 sleeping,   0 stopped,   0 zombie
+%Cpu(s): 30.5 us, 12.9 sy,  0.0 ni, 53.5 id,  0.2 wa,  0.0 hi,  2.9 si,  0.0 st 
+MiB Mem : 380662.8 total, 369042.5 free,   4832.7 used,   9749.3 buff/cache     
+    PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND
+ 147497 ubuntu    20   0   16.0g   1.1g  43624 S  1352   0.3   2:24.74 mysqld
+ 147608 ubuntu    20   0 7095168  49440   6356 S 858.1   0.0   1:36.98 sqlbench
+ 147928 ubuntu    20   0   10972   5688   3584 R   0.2   0.0   0:00.01 top
+      1 root      20   0   25380  16224  10968 S   0.0   0.0   0:02.81 systemd

@@ -1,0 +1,30 @@
+
+ -------------------------------------------------------------------------------------------------------------------------------------------
+  Task                  |   Runtime ms  |  Count   | Avg delay ms    | Max delay ms    | Max delay start           | Max delay end          |
+ -------------------------------------------------------------------------------------------------------------------------------------------
+  sqlbench:(23)         |   3893.227 ms |   174406 | avg:   0.053 ms | max:   4.775 ms | max start:  7881.771932 s | max end:  7881.776707 s
+  connection:(8)        |  10166.484 ms |   167460 | avg:   0.032 ms | max:   3.650 ms | max start:  7881.771962 s | max end:  7881.775612 s
+  ib_log_fl_notif:150628 |    308.505 ms |    54774 | avg:   0.004 ms | max:   3.606 ms | max start:  7881.771814 s | max end:  7881.775420 s
+  ib_log_writer:150631  |   2969.383 ms |     1682 | avg:   0.004 ms | max:   2.329 ms | max start:  7881.774315 s | max end:  7881.776644 s
+  kworker/47:2-mm:31287 |      0.022 ms |        3 | avg:   0.480 ms | max:   1.424 ms | max start:  7882.039095 s | max end:  7882.040519 s
+  ib_srv_wkr-2:150664   |     25.778 ms |     2880 | avg:   0.097 ms | max:   0.441 ms | max start:  7882.425708 s | max end:  7882.426149 s
+  ib_srv_wkr-3:150665   |     22.540 ms |     2996 | avg:   0.070 ms | max:   0.419 ms | max start:  7884.648469 s | max end:  7884.648888 s
+  kworker/u192:2-:123136 |     21.270 ms |     1156 | avg:   0.090 ms | max:   0.411 ms | max start:  7882.861396 s | max end:  7882.861807 s
+  ib_srv_wkr-1:150663   |     26.985 ms |     4611 | avg:   0.038 ms | max:   0.411 ms | max start:  7884.686522 s | max end:  7884.686933 s
+  ib_log_checkpt:150627 |     15.115 ms |      288 | avg:   0.114 ms | max:   0.392 ms | max start:  7884.662272 s | max end:  7884.662664 s
+  kworker/u192:4-:124606 |     12.320 ms |      716 | avg:   0.097 ms | max:   0.385 ms | max start:  7884.365217 s | max end:  7884.365601 s
+  ib_io_wr-1:150609     |      1.269 ms |       78 | avg:   0.036 ms | max:   0.384 ms | max start:  7883.761802 s | max end:  7883.762186 s
+  ib_io_wr-3:150611     |      1.265 ms |       49 | avg:   0.073 ms | max:   0.377 ms | max start:  7883.761473 s | max end:  7883.761850 s
+  jbd2/nvme1n1-8:2264   |     64.498 ms |     6154 | avg:   0.027 ms | max:   0.362 ms | max start:  7883.873830 s | max end:  7883.874192 s
+  ib_io_wr-4:150612     |      1.306 ms |       73 | avg:   0.041 ms | max:   0.357 ms | max start:  7883.762196 s | max end:  7883.762553 s
+  ib_log_flush:150629   |   1348.902 ms |    64359 | avg:   0.002 ms | max:   0.351 ms | max start:  7882.304004 s | max end:  7882.304355 s
+  ib_srv_lock_to:150639 |      6.163 ms |      428 | avg:   0.110 ms | max:   0.347 ms | max start:  7884.233765 s | max end:  7884.234112 s
+  ib_pg_flush-9:150622  |      0.040 ms |        3 | avg:   0.219 ms | max:   0.329 ms | max start:  7882.758498 s | max end:  7882.758827 s
+  kworker/32:0-mm:214   |      0.049 ms |        6 | avg:   0.064 ms | max:   0.313 ms | max start:  7884.151195 s | max end:  7884.151508 s
+  kworker/u192:0-:118701 |      4.442 ms |      209 | avg:   0.134 ms | max:   0.312 ms | max start:  7883.646546 s | max end:  7883.646857 s
+  kworker/12:3-mm:566   |      0.015 ms |        3 | avg:   0.116 ms | max:   0.294 ms | max start:  7884.151188 s | max end:  7884.151482 s
+  ib_io_wr-2:150610     |      1.226 ms |       62 | avg:   0.053 ms | max:   0.281 ms | max start:  7883.763120 s | max end:  7883.763401 s
+  ib_srv_purge:150662   |    120.735 ms |     5730 | avg:   0.004 ms | max:   0.279 ms | max start:  7883.773791 s | max end:  7883.774070 s
+  kcompactd0:316        |      0.027 ms |        6 | avg:   0.044 ms | max:   0.251 ms | max start:  7884.599104 s | max end:  7884.599354 s
+  ib_pg_flush-1:150614  |      1.503 ms |       11 | avg:   0.031 ms | max:   0.248 ms | max start:  7883.761457 s | max end:  7883.761705 s
+  kworker/13:0-mm:99    |      0.166 ms |       12 | avg:   0.030 ms | max:   0.248 ms | max start:  7883.191189 s | max end:  7883.191437 s

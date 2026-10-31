@@ -97,7 +97,8 @@ struct DB::Durability {
   // waiting for a flush. Kept apart, a commit wakes only the writer.
   std::condition_variable work, durable_cond;
   std::vector<Commit> queue;
-  size_t last_batch = 0;  // commits in the latest flush
+  size_t last_batch = 0;      // commits in the latest flush
+  int64_t last_flush_ns = 0;  // how long its write and sync took, when gather and now are set
   uint64_t durable = 0;  // every commit at or below is synced
   bool closed = false;
   bool failed = false;  // a write or sync failed; the process must stop

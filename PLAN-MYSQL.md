@@ -216,7 +216,7 @@ Status ledger:
 | In Progress | Work | 3M: Auto-increment | `get_auto_increment` takes `DB::NextID`. Missing: MTR tests, including gaps after aborts. |
 | Complete | Work | 3N: Status variables for serialization order and counters | Session `Celltnx_last_commit_ts` and `Celltnx_last_read_ts`; global commits, conflicts by cause, CHECK failures, FOR UPDATE waits, timeouts and refreshes, and commit-lock wait and hold; `t/status.test`. |
 | Incomplete | Work | 3O: Wire oracle | Missing: `cmd/wireoracle`, the shared generator package, and a run that catches a deliberately broken engine build. |
-| Complete | Work | 3P: `sqlbench -engine` and `-audit` | `-engine` and `-audit` in `cmd/sqlbench/main.go`: TPC-C consistency conditions 1–4, and ledger balances reconciled with the ledger; every audited run in `bench/results/*.log` passes. |
+| Complete | Work | 3P: `sqlbench -engine` and `-audit` | `-engine` and `-audit` in `cmd/sqlbench/main.go`: TPC-C consistency conditions 1–4, and ledger balances reconciled with the ledger; every audited run in `bench/results/*/*.log` passes. |
 | Complete | Doc | `ENGINE.md` covers the handler, row and key formats, transactions and errors | `ENGINE.md`. |
 | Incomplete | Test | MTR suite on debug, ASan and TSan builds | Missing: run logs. |
 | Incomplete | Test | Wire oracle: 10,000 seeds at 4, 16 and 64 connections | Missing: run logs. |
@@ -295,11 +295,11 @@ Status ledger:
 
 | Status | Type | Item | Evidence / Gap |
 | --- | --- | --- | --- |
-| Complete | Work | 5A: `bench/compare-mysql.sh` | `bench/compare-mysql.sh` and `bench/median.sh`; full runs in `bench/results/nosync.csv`, `ledger-clients.csv` and `durable.csv`. |
+| Complete | Work | 5A: `bench/compare-mysql.sh` | `bench/compare-mysql.sh` and `bench/median.sh`; full runs on EC2 i7i in `bench/results/i7i/` and on the desktop in `bench/results/desktop/`: `nosync.csv`, `ledger-clients.csv` and `durable.csv`. |
 | Incomplete | Work | 5B: Reference runs (official image, Go server) | Missing: CSV rows for InnoDB in the official `mysql:8.4` image and for the Go `cmd/server`. |
 | Complete | Work | 5C: Profiles and commit-lock metrics | `RESULTS-MYSQL.md`, Where the server's time goes: CPU by binary and commit-lock hold per commit for TPC-C and the 1-hot ledger, from `perf record` and `Celltnx_commit_lock_hold_ns`; the ledger profile found the version-chain walk under the commit lock (1H). Commit-lock p99 needs a histogram the engine lacks; it reports totals. |
 | Complete | Doc | 5D: `RESULTS-MYSQL.md` | `RESULTS-MYSQL.md`: correctness, hot accounts, TPC-C and users, prepared statements, durable tables, profiles, reproduction. |
-| In Progress | Test | Audit and oracle on the benchmarked build | 153 TPC-C and 264 ledger audits consistent in `bench/results/*.log`; MTR 6 of 6 on the same build. Missing: wire oracle (3O). |
+| In Progress | Test | Audit and oracle on the benchmarked build | i7i: 177 TPC-C and 327 ledger audits consistent; desktop: 153 and 264 (`bench/results/*/*.log`); MTR 6 of 6 on the desktop build. Missing: wire oracle (3O). |
 | Complete | Decision | Proceed to Phase 6 | TPC-C at 1 warehouse: `cell+delta` 11,130 commits/s against InnoDB SERIALIZABLE's 2,660. `row` 2,244, `cell` 3,641: cell granularity gains 62%, and deltas with FOR UPDATE queueing the rest (`RESULTS-MYSQL.md`). |
 | Incomplete | Gate | Phase 5 gate | Missing: every row above complete. |
 
@@ -310,7 +310,7 @@ Goal:
 
 Scope:
 - `cpp/store/lionturtle` implements the `Store` contract (0D): one `lt_write` per flush, holding every queued commit's row images and the newest commit timestamp; the writer calls `lt_sync` once per flush, and any status other than `LT_OK` stops the store for good. Auto-increment counters resume past the largest loaded value. `bench/build-mysql.sh` builds `lionturtle-c` at the commit pinned in `cpp/store/lionturtle/fetch.sh` with cargo and links it into the plugin.
-- The engine keeps its store under `<datadir>/celltnx` and runs the writer on a background thread. System variables `celltnx_sync` and `celltnx_commit_delay_us` match the Go server's `-nosync` and `-commitdelay`; `celltnx_group_wait_us` lets the writer wait after each sync for the clients it acknowledged.
+- The engine keeps its store under `<datadir>/celltnx` and runs the writer on a background thread. System variables `celltnx_sync` and `celltnx_commit_delay_us` match the Go server's `-nosync` and `-commitdelay`; `celltnx_group_wait_us` lets the writer wait after each sync for the clients it acknowledged, no longer than that sync took.
 - Recovery: plugin init opens the store and restores `lastCommitTs`. Each table loads its rows and rebuilds its indexes on first open, from the `TABLE_SHARE`'s definitions, under the commit lock.
 - DDL: create, drop and truncate persist and sync before returning, keyed by the table's data-dictionary object ID, which RENAME keeps. Without atomic DDL, a crash between the data dictionary's commit and the engine's leaves an empty table or unreachable rows; `ENGINE.md` documents this.
 - Crash tests: port `store/badger/crash_test.go` as a store-level kill test, building on `cpp/store/lionturtle/check/usecase.cc`, and add a `mysqld` kill test that runs TPC-C, kills the server, restarts it, and compares the tables with a serial replay of acknowledged commits, ordered by `Celltnx_last_commit_ts`.
@@ -336,7 +336,9 @@ Status ledger:
 | Complete | Work | 6C: Lazy per-table recovery | `DB::LoadRows` and `ha_celltnx::open`; `t/durable.test` restarts twice and checks rows, unique and secondary indexes, CHECKs, auto-increment, BLOBs and keyless tables. |
 | Complete | Work | 6D: Durable DDL | Tables keyed by data-dictionary object ID, which MySQL assigns before an engine without atomic DDL creates the table, so RENAME needs no store change; `t/durable.test` covers RENAME, TRUNCATE, and DROP followed by CREATE across restarts. |
 | Incomplete | Work | 6E: `mysqld` kill test | Missing: harness and 8 passing rounds. |
-| Complete | Work | 6F: Durable benchmark | `bench/results/durable.csv` at 32 and 128 clients; tables in `RESULTS-MYSQL.md`. TPC-C at 1 warehouse and 32 clients: `cell+delta` 6,437 commits/s against InnoDB SERIALIZABLE's 2,248. |
+| Complete | Work | 6F: Durable benchmark | `bench/results/i7i/durable.csv` and `durable-clients.csv` on an EC2 i7i.12xlarge (instance-store NVMe, 18 µs `fdatasync`), and `bench/results/desktop/durable.csv` on a drive without power-loss protection; tables in `RESULTS-MYSQL.md`. At 128 clients on the i7i: hot account 75,102 transfers/s against InnoDB SERIALIZABLE's 1,856; TPC-C at 1 warehouse 6,482 commits/s against 842. |
+| Complete | Work | 6G: Group wait bounded by flush time | `gather` in `ha_celltnx.cc` waits no longer than the previous flush took; `LionturtleStore.GatherSeesFlushTime` in `store_test.cc`; `cpp/ci.sh` passes. On the i7i the full 500 µs wait cost up to 20% at 128 clients (`bench/results/i7i/group-wait.csv`, `RESULTS-MYSQL.md`). |
+| Incomplete | Work | 6H: Durable commit latency | At 8 clients each commit sleeps about 150 µs through two thread handoffs, and InnoDB commits 1.6× faster (`bench/results/i7i/profile/`). Missing: committing threads flushing their own group, or precise short waits, measured on the i7i. |
 | Complete | Doc | `ENGINE.md` covers durability, recovery and DDL crash behavior | `ENGINE.md`, Durability and recovery. |
 | Incomplete | Test | Simulator sweep, MTR and wire oracle with the store attached | Missing: run logs. |
 | Incomplete | Gate | Phase 6 gate | Missing: every row above complete. |

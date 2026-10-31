@@ -95,6 +95,43 @@ TEST(LionturtleStore, DurableTables) {
   std::filesystem::remove_all(dir);
 }
 
+// The writer tells gather how many commits the previous flush carried and
+// how long its write and sync took, so a host can bound its wait by it.
+TEST(LionturtleStore, GatherSeesFlushTime) {
+  std::string dir = TempDir("gather");
+  Schema s{.name = "t", .cols = {"v"}};
+  std::vector<Value> row = {Value::Str("v")};
+  std::vector<std::pair<size_t, int64_t>> calls;  // the writer's until it joins
+  {
+    std::unique_ptr<Store> st;
+    MUST(Store::Open(dir, &st));
+    Options o{.store = st.get()};
+    o.now = [] {
+      return int64_t(std::chrono::duration_cast<std::chrono::nanoseconds>(
+                         std::chrono::steady_clock::now().time_since_epoch())
+                         .count());
+    };
+    o.gather = [&](size_t last, int64_t flush_ns, const std::function<size_t()> &) {
+      calls.emplace_back(last, flush_ns);
+    };
+    DB db(std::move(o), {s});
+    st->Bind(0, 1);
+    std::thread w([&] { (void)db.RunWriter(); });
+    for (const char *k : {"k1", "k2"}) {
+      auto tx = db.Begin();
+      MUST(tx->Insert(0, k, row));
+      MUST(tx->Commit());  // waits for its own flush
+    }
+    db.Close();
+    w.join();
+  }
+  ASSERT_EQ(calls.size(), 2u);
+  EXPECT_EQ(calls[0], (std::pair<size_t, int64_t>{0, 0}));
+  EXPECT_EQ(calls[1].first, 1u);
+  EXPECT_GT(calls[1].second, 0);
+  std::filesystem::remove_all(dir);
+}
+
 // --- kill -9 ---
 
 workload::TPCC CrashWorkload() { return workload::TPCC(2, 4, 30, 200, 10); }

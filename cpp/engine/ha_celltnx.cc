@@ -706,20 +706,24 @@ static int Init(void *p) {
     // Clients acknowledged by one sync commit again moments later, just
     // after the next sync has begun without them, so they wait through two
     // syncs while a second group fills the gap. Waiting briefly for them
-    // merges the groups, and each commit waits about one sync. Clients with
-    // long transactions never return in time; after two waits in a row in
-    // which fewer than half of them came back, the writer stops waiting
-    // for a while, then tries again.
-    o.gather = [](size_t last, const std::function<size_t()> &queued) {
+    // merges the groups, and each commit waits about one sync. The wait
+    // pays only while it is shorter than the sync it saves, so it lasts no
+    // longer than the previous flush took: the full celltnx_group_wait_us
+    // on a drive that empties a volatile cache on each sync (milliseconds),
+    // and next to nothing on one with power-loss protection (tens of
+    // microseconds). Clients with long transactions never return in time;
+    // after two waits in a row in which fewer than half of them came back,
+    // the writer stops waiting for a while, then tries again.
+    o.gather = [](size_t last, int64_t flush_ns, const std::function<size_t()> &queued) {
       static int misses = 0, skip = 0;  // the writer thread's alone
-      uint us = group_wait_us_var;
-      if (us == 0 || last == 0) return;
+      int64_t ns = std::min(int64_t(group_wait_us_var) * 1000, flush_ns);
+      if (ns <= 0 || last == 0) return;
       if (skip > 0) {
         skip--;
         return;
       }
       size_t start = queued(), target = start + last;
-      auto deadline = std::chrono::steady_clock::now() + std::chrono::microseconds(us);
+      auto deadline = std::chrono::steady_clock::now() + std::chrono::nanoseconds(ns);
       while (queued() < target && std::chrono::steady_clock::now() < deadline)
         std::this_thread::sleep_for(std::chrono::microseconds(20));
       if (queued() - start >= std::max<size_t>(1, last / 2)) {
@@ -1590,7 +1594,8 @@ static MYSQL_SYSVAR_UINT(commit_delay_us, commit_delay_us_var, PLUGIN_VAR_RQCMDA
 
 static MYSQL_SYSVAR_UINT(group_wait_us, group_wait_us_var, PLUGIN_VAR_RQCMDARG,
                          "Microseconds the store's writer may wait, after each sync, for the clients it acknowledged "
-                         "to commit again, so they share the next sync; 0 never waits",
+                         "to commit again, so they share the next sync; it waits no longer than that sync took, "
+                         "and 0 never waits",
                          nullptr, nullptr, 500, 0, 100000, 0);
 
 static SYS_VAR *celltnx_system_variables[] = {MYSQL_SYSVAR(mode),         MYSQL_SYSVAR(bucket_bits),

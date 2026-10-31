@@ -165,11 +165,13 @@ struct Options {
   // sleep there, so commits arriving meanwhile share the sync.
   std::function<void()> commit_delay;
   // gather, when set, runs on the writer before each flush, after
-  // commit_delay: last is how many commits the previous flush carried, and
-  // queued reports how many wait now. Hosts wait there for the clients the
-  // previous flush acknowledged to commit again, so their commits share
-  // the next sync instead of alternating with another group's.
-  std::function<void(size_t last, const std::function<size_t()> &queued)> gather;
+  // commit_delay: last is how many commits the previous flush carried,
+  // flush_ns how long its write and sync took in now's units (0 without
+  // now), and queued reports how many wait now. Hosts wait there for the
+  // clients the previous flush acknowledged to commit again, so their
+  // commits share the next sync instead of alternating with another
+  // group's.
+  std::function<void(size_t last, int64_t flush_ns, const std::function<size_t()> &queued)> gather;
   // wait, when set, replaces blocking waits: it must return once cond
   // holds. The simulator uses it to yield instead of block.
   std::function<void(const std::function<bool()> &cond)> wait;

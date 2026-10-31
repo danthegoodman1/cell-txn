@@ -1,0 +1,30 @@
+
+ -------------------------------------------------------------------------------------------------------------------------------------------
+  Task                  |   Runtime ms  |  Count   | Avg delay ms    | Max delay ms    | Max delay start           | Max delay end          |
+ -------------------------------------------------------------------------------------------------------------------------------------------
+  sqlbench:(22)         |   3273.073 ms |   152457 | avg:   0.060 ms | max:   7.304 ms | max start:  7845.335501 s | max end:  7845.342805 s
+  connection:(8)        |   6117.708 ms |   175397 | avg:   0.042 ms | max:   5.574 ms | max start:  7845.335750 s | max end:  7845.341324 s
+  mysqld:150109         |    449.500 ms |    29834 | avg:   0.021 ms | max:   0.415 ms | max start:  7848.261790 s | max end:  7848.262205 s
+  kworker/26:2-mm:398   |      0.013 ms |        2 | avg:   0.222 ms | max:   0.400 ms | max start:  7846.416995 s | max end:  7846.417395 s
+  perf:(2)              |     59.403 ms |        6 | avg:   0.081 ms | max:   0.278 ms | max start:  7848.343768 s | max end:  7848.344046 s
+  ib_srv_wkr-3:150118   |      0.050 ms |        4 | avg:   0.145 ms | max:   0.252 ms | max start:  7846.572444 s | max end:  7846.572696 s
+  kworker/15:2-mm:131061 |      0.049 ms |        5 | avg:   0.052 ms | max:   0.242 ms | max start:  7847.159112 s | max end:  7847.159354 s
+  kworker/25:0-mm:34323 |      0.023 ms |        3 | avg:   0.081 ms | max:   0.234 ms | max start:  7847.159116 s | max end:  7847.159350 s
+  multipathd:(2)        |      0.128 ms |        6 | avg:   0.111 ms | max:   0.233 ms | max start:  7846.889726 s | max end:  7846.889959 s
+  kworker/34:1-mm:455   |      0.031 ms |        5 | avg:   0.050 ms | max:   0.226 ms | max start:  7847.159121 s | max end:  7847.159347 s
+  kworker/23:0-mm:31286 |      0.027 ms |        4 | avg:   0.093 ms | max:   0.226 ms | max start:  7846.199157 s | max end:  7846.199383 s
+  kworker/31:1-mm:421   |      0.028 ms |        4 | avg:   0.091 ms | max:   0.226 ms | max start:  7847.159120 s | max end:  7847.159346 s
+  kworker/3:1-mm_:456   |      0.020 ms |        3 | avg:   0.113 ms | max:   0.225 ms | max start:  7846.199153 s | max end:  7846.199378 s
+  kworker/12:3-mm:566   |      0.013 ms |        2 | avg:   0.113 ms | max:   0.223 ms | max start:  7846.199154 s | max end:  7846.199377 s
+  kworker/18:2-mm:31426 |      0.013 ms |        2 | avg:   0.119 ms | max:   0.222 ms | max start:  7846.199156 s | max end:  7846.199378 s
+  ib_srv_wkr-1:150116   |      0.044 ms |        3 | avg:   0.184 ms | max:   0.218 ms | max start:  7845.572046 s | max end:  7845.572264 s
+  ib_srv_purge:150115   |      0.210 ms |       13 | avg:   0.024 ms | max:   0.218 ms | max start:  7846.572118 s | max end:  7846.572336 s
+  kworker/44:1H-k:2398  |      0.051 ms |        4 | avg:   0.166 ms | max:   0.218 ms | max start:  7848.311171 s | max end:  7848.311389 s
+  kworker/u192:2-:123136 |      0.937 ms |       30 | avg:   0.080 ms | max:   0.218 ms | max start:  7845.614988 s | max end:  7845.615206 s
+  kworker/47:2-mm:31287 |      0.015 ms |        2 | avg:   0.111 ms | max:   0.217 ms | max start:  7846.199166 s | max end:  7846.199383 s
+  in:imklog:1408        |      0.028 ms |        1 | avg:   0.212 ms | max:   0.212 ms | max start:  7845.889680 s | max end:  7845.889892 s
+  systemd-journal:510   |      0.159 ms |        4 | avg:   0.091 ms | max:   0.211 ms | max start:  7845.889682 s | max end:  7845.889893 s
+  ib_srv_wkr-2:150117   |      0.051 ms |        3 | avg:   0.160 ms | max:   0.207 ms | max start:  7845.572053 s | max end:  7845.572260 s
+  lionturtle-log-:150281 |      0.851 ms |       14 | avg:   0.059 ms | max:   0.200 ms | max start:  7847.986857 s | max end:  7847.987057 s
+  ib_io_rd-23:150060    |      0.055 ms |        6 | avg:   0.034 ms | max:   0.185 ms | max start:  7845.858782 s | max end:  7845.858967 s
+  rcu_sched:16          |      0.108 ms |       15 | avg:   0.061 ms | max:   0.185 ms | max start:  7846.202997 s | max end:  7846.203182 s

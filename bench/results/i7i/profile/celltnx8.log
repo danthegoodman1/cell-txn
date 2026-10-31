@@ -1,0 +1,2 @@
+celltnx-cell+delta ledger clients=8      10668 commits/s  retries/txn 0.00  p50 501.134µs  p99 2.539825ms  errors 0
+audit: ledger data consistent after 320046 transactions

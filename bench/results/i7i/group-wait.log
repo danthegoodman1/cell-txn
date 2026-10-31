@@ -1,0 +1,48 @@
+celltnx-cell+delta-gw0 tpcc   clients=128     6638 commits/s  retries/txn 0.02  p50 2.698961ms  p99 187.143042ms  errors 0
+audit: tpcc data consistent after 53107 transactions
+celltnx-cell+delta-gw0 tpcc   clients=128     6468 commits/s  retries/txn 0.02  p50 2.817748ms  p99 201.483507ms  errors 0
+audit: tpcc data consistent after 51744 transactions
+celltnx-cell+delta-gw0 tpcc   clients=128     6535 commits/s  retries/txn 0.02  p50 2.628066ms  p99 221.016559ms  errors 0
+audit: tpcc data consistent after 52280 transactions
+celltnx-cell+delta-gw0 users  clients=128   134568 commits/s  retries/txn 0.04  p50 832.509µs  p99 4.391539ms  errors 0
+celltnx-cell+delta-gw0 users  clients=128   134548 commits/s  retries/txn 0.04  p50 835.003µs  p99 4.452315ms  errors 0
+celltnx-cell+delta-gw0 users  clients=128   132692 commits/s  retries/txn 0.04  p50 842.628µs  p99 4.463994ms  errors 0
+celltnx-cell+delta-gw0 users  clients=128    32770 commits/s  retries/txn 0.00  p50 196.442µs  p99 74.709403ms  errors 0
+celltnx-cell+delta-gw0 users  clients=128    25920 commits/s  retries/txn 0.00  p50 212.32µs  p99 95.260997ms  errors 0
+celltnx-cell+delta-gw0 users  clients=128    30624 commits/s  retries/txn 0.00  p50 202.891µs  p99 80.047455ms  errors 0
+celltnx-cell+delta-gw0 ledger clients=128    77663 commits/s  retries/txn 0.00  p50 1.384318ms  p99 6.127674ms  errors 0
+audit: ledger data consistent after 621304 transactions
+celltnx-cell+delta-gw0 ledger clients=128    78572 commits/s  retries/txn 0.00  p50 1.423234ms  p99 5.36707ms  errors 0
+audit: ledger data consistent after 628574 transactions
+celltnx-cell+delta-gw0 ledger clients=128    78372 commits/s  retries/txn 0.00  p50 1.435015ms  p99 5.340692ms  errors 0
+audit: ledger data consistent after 626972 transactions
+celltnx-cell+delta-gw0 ledger clients=128    79868 commits/s  retries/txn 0.00  p50 1.338977ms  p99 6.182879ms  errors 0
+audit: ledger data consistent after 638948 transactions
+celltnx-cell+delta-gw0 ledger clients=128    79012 commits/s  retries/txn 0.00  p50 1.337805ms  p99 6.555898ms  errors 0
+audit: ledger data consistent after 632099 transactions
+celltnx-cell+delta-gw0 ledger clients=128    79419 commits/s  retries/txn 0.00  p50 1.419842ms  p99 5.367587ms  errors 0
+audit: ledger data consistent after 635353 transactions
+celltnx-cell+delta-gw50 tpcc   clients=128     6533 commits/s  retries/txn 0.02  p50 2.490097ms  p99 252.59618ms  errors 0
+audit: tpcc data consistent after 52264 transactions
+celltnx-cell+delta-gw50 tpcc   clients=128     6322 commits/s  retries/txn 0.02  p50 2.755981ms  p99 225.561758ms  errors 0
+audit: tpcc data consistent after 50578 transactions
+celltnx-cell+delta-gw50 tpcc   clients=128     6257 commits/s  retries/txn 0.02  p50 2.648338ms  p99 265.939744ms  errors 0
+audit: tpcc data consistent after 50055 transactions
+celltnx-cell+delta-gw50 users  clients=128   131024 commits/s  retries/txn 0.04  p50 837.623µs  p99 4.273033ms  errors 0
+celltnx-cell+delta-gw50 users  clients=128   130804 commits/s  retries/txn 0.04  p50 830.52µs  p99 4.233889ms  errors 0
+celltnx-cell+delta-gw50 users  clients=128   131630 commits/s  retries/txn 0.04  p50 824.63µs  p99 4.261273ms  errors 0
+celltnx-cell+delta-gw50 users  clients=128    36632 commits/s  retries/txn 0.00  p50 259.301µs  p99 65.086231ms  errors 0
+celltnx-cell+delta-gw50 users  clients=128    33046 commits/s  retries/txn 0.00  p50 264.305µs  p99 72.464022ms  errors 0
+celltnx-cell+delta-gw50 users  clients=128    26731 commits/s  retries/txn 0.00  p50 276.243µs  p99 90.638916ms  errors 0
+celltnx-cell+delta-gw50 ledger clients=128    77663 commits/s  retries/txn 0.00  p50 1.460019ms  p99 5.249795ms  errors 0
+audit: ledger data consistent after 621301 transactions
+celltnx-cell+delta-gw50 ledger clients=128    77715 commits/s  retries/txn 0.00  p50 1.404793ms  p99 5.652139ms  errors 0
+audit: ledger data consistent after 621718 transactions
+celltnx-cell+delta-gw50 ledger clients=128    77309 commits/s  retries/txn 0.00  p50 1.397711ms  p99 5.871225ms  errors 0
+audit: ledger data consistent after 618473 transactions
+celltnx-cell+delta-gw50 ledger clients=128    78885 commits/s  retries/txn 0.00  p50 1.427509ms  p99 5.379695ms  errors 0
+audit: ledger data consistent after 631082 transactions
+celltnx-cell+delta-gw50 ledger clients=128    78243 commits/s  retries/txn 0.00  p50 1.45592ms  p99 5.351445ms  errors 0
+audit: ledger data consistent after 625944 transactions
+celltnx-cell+delta-gw50 ledger clients=128    78260 commits/s  retries/txn 0.00  p50 1.38523ms  p99 5.927103ms  errors 0
+audit: ledger data consistent after 626081 transactions

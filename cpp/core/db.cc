@@ -523,11 +523,15 @@ Status DB::Flush() {
     std::lock_guard g(d.mu);
     d.last_batch = batch.size();
   }
+  bool timed = opts_.gather && opts_.now;
+  int64_t t0 = timed ? opts_.now() : 0;
   Status st = opts_.store->Write(batch);
   if (st.ok()) st = opts_.store->Sync();
+  int64_t took = timed ? opts_.now() - t0 : 0;
   std::vector<Version *> freed;
   {
     std::lock_guard g(d.mu);
+    d.last_flush_ns = took;
     if (!st.ok()) {
       d.failed = true;
     } else {
@@ -551,11 +555,13 @@ Status DB::RunWriter() {
     if (opts_.commit_delay) opts_.commit_delay();
     if (opts_.gather) {
       size_t last;
+      int64_t took;
       {
         std::lock_guard g(dur_->mu);
         last = dur_->last_batch;
+        took = dur_->last_flush_ns;
       }
-      opts_.gather(last, [this] {
+      opts_.gather(last, took, [this] {
         std::lock_guard g(dur_->mu);
         return dur_->queue.size();
       });
