@@ -39,7 +39,7 @@ cleanup() {
 	rm -rf "$work"
 }
 trap cleanup EXIT
-go build -o "$work/sqlbench" ./cmd/sqlbench
+(cd bench/sqlbench && go build -o "$work/sqlbench" .)
 "$build/bin/mysqld" --no-defaults --initialize-insecure --datadir="$work/pristine" >"$work/init.log" 2>&1
 
 start() { # extra mysqld flags...

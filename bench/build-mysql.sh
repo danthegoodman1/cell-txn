@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Builds MySQL from a pinned 8.4 release, with cpp/engine linked into the
+# Builds MySQL from a pinned 8.4 release, with engine/ linked into the
 # source tree as storage/celltnx so the celltnx engine builds as a plugin.
 # Usage: bench/build-mysql.sh [release|debug|asan|tsan] [ninja targets...]
 # MYSQL_ROOT (default ~/.cache/celltnx) holds the source and the build trees;
@@ -18,16 +18,16 @@ if [ ! -d "$src" ]; then
 	curl -fsSL "https://github.com/mysql/mysql-server/archive/refs/tags/$tag.tar.gz" | tar -xz -C "$root"
 	mv "$root/mysql-server-$tag" "$src"
 fi
-if [ -f "$repo/cpp/engine/CMakeLists.txt" ]; then
-	ln -sfn "$repo/cpp/engine" "$src/storage/celltnx"
+if [ -f "$repo/engine/CMakeLists.txt" ]; then
+	ln -sfn "$repo/engine" "$src/storage/celltnx"
 	# The MTR suite, and the variables MTR derives for the plugin
 	# ($CELLTNX_PLUGIN_OPT, $CELLTNX_PLUGIN_LOAD_ADD, ...).
-	ln -sfn "$repo/cpp/engine/mysql-test" "$src/mysql-test/suite/celltnx"
+	ln -sfn "$repo/engine/mysql-test" "$src/mysql-test/suite/celltnx"
 	grep -q '^ha_celltnx ' "$src/mysql-test/include/plugin.defs" ||
 		echo 'ha_celltnx plugin_output_directory no CELLTNX_PLUGIN CELLTNX' >>"$src/mysql-test/include/plugin.defs"
 fi
 
-lionturtle=$("$repo/cpp/store/lionturtle/fetch.sh")
+lionturtle=$("$repo/store/lionturtle/fetch.sh")
 flags=(
 	-G Ninja
 	-DCELLTNX_LIONTURTLE_DIR="$lionturtle"
