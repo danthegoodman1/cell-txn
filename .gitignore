@@ -1,2 +1,4 @@
 .benchdata/
 *.csv
+build/
+!bench/results/**/*.csv

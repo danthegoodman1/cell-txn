@@ -1,0 +1,118 @@
+# SELECT ... FOR UPDATE waits for another transaction's lock on the row,
+# then reads the committed result, so a hot read-modify-write queues instead
+# of conflicting at commit.
+
+CREATE TABLE counters (id INT PRIMARY KEY, n INT NOT NULL, note VARCHAR(20)) ENGINE=CELLTNX;
+INSERT INTO counters VALUES (1, 0, 'a'), (2, 0, 'b');
+
+connect (con1, localhost, root,,);
+connect (con2, localhost, root,,);
+
+--echo # con2 waits for con1's lock, then reads and increments con1's result.
+connection con1;
+BEGIN;
+SELECT n FROM counters WHERE id = 1 FOR UPDATE;
+connection con2;
+BEGIN;
+SELECT note FROM counters WHERE id = 2;
+send SELECT n FROM counters WHERE id = 1 FOR UPDATE;
+connection default;
+let $wait_condition = SELECT COUNT(*) = 1 FROM information_schema.processlist
+  WHERE info LIKE 'SELECT n FROM counters WHERE id = 1 FOR UPDATE';
+--source include/wait_condition.inc
+connection con1;
+UPDATE counters SET n = 1 WHERE id = 1;
+COMMIT;
+connection con2;
+reap;
+UPDATE counters SET n = 2 WHERE id = 1;
+COMMIT;
+SELECT * FROM counters ORDER BY id;
+
+--echo # If something con2 read earlier changed meanwhile, the wait ends in a
+--echo # conflict at once.
+connection con1;
+BEGIN;
+SELECT n FROM counters WHERE id = 1 FOR UPDATE;
+UPDATE counters SET note = 'c' WHERE id = 2;
+connection con2;
+BEGIN;
+SELECT note FROM counters WHERE id = 2;
+send SELECT n FROM counters WHERE id = 1 FOR UPDATE;
+connection default;
+--source include/wait_condition.inc
+connection con1;
+UPDATE counters SET n = 3 WHERE id = 1;
+COMMIT;
+connection con2;
+--error ER_LOCK_DEADLOCK
+reap;
+SELECT * FROM counters ORDER BY id;
+
+--echo # A transaction already holding a lock reads without waiting, and a
+--echo # wait past celltnx_lock_wait_ms reads anyway; validation decides at
+--echo # commit.
+SET GLOBAL celltnx_lock_wait_ms = 50;
+connection con1;
+BEGIN;
+SELECT n FROM counters WHERE id = 1 FOR UPDATE;
+connection con2;
+BEGIN;
+SELECT n FROM counters WHERE id = 2 FOR UPDATE;
+SELECT n FROM counters WHERE id = 1 FOR UPDATE;
+UPDATE counters SET n = 10 WHERE id = 2;
+COMMIT;
+connection con1;
+UPDATE counters SET n = n + 1 WHERE id = 1;
+COMMIT;
+connection con2;
+BEGIN;
+SELECT n FROM counters WHERE id = 1 FOR UPDATE;
+connection con1;
+BEGIN;
+SELECT n FROM counters WHERE id = 1 FOR UPDATE;
+UPDATE counters SET n = 20 WHERE id = 1;
+connection con2;
+UPDATE counters SET n = 30 WHERE id = 1;
+COMMIT;
+connection con1;
+--error ER_LOCK_DEADLOCK
+COMMIT;
+SELECT * FROM counters ORDER BY id;
+SET GLOBAL celltnx_lock_wait_ms = DEFAULT;
+
+--echo # A delta on a column a FOR UPDATE reader holds waits for it, so the
+--echo # reader's read-modify-write commits; a delta on another column of the
+--echo # row does not wait.
+ALTER TABLE counters ADD COLUMN total INT NOT NULL DEFAULT 0;
+connection con1;
+BEGIN;
+SELECT n FROM counters WHERE id = 1 FOR UPDATE;
+connection con2;
+UPDATE counters SET total = total + 5 WHERE id = 1;
+send UPDATE counters SET n = n + 100 WHERE id = 1;
+connection default;
+let $wait_condition = SELECT COUNT(*) = 1 FROM information_schema.processlist
+  WHERE info LIKE 'UPDATE counters SET n = n + 100 WHERE id = 1';
+--source include/wait_condition.inc
+connection con1;
+UPDATE counters SET n = 31 WHERE id = 1;
+COMMIT;
+connection con2;
+reap;
+SELECT * FROM counters ORDER BY id;
+
+--echo # Rollback releases the lock.
+connection con1;
+BEGIN;
+SELECT n FROM counters WHERE id = 1 FOR UPDATE;
+ROLLBACK;
+connection con2;
+BEGIN;
+SELECT n FROM counters WHERE id = 1 FOR UPDATE;
+COMMIT;
+
+disconnect con1;
+disconnect con2;
+connection default;
+DROP TABLE counters;

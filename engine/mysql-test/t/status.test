@@ -1,0 +1,81 @@
+# System variables and their defaults, and the status variables that count
+# commits, conflicts and FOR UPDATE waits and report each session's
+# serialization point.
+
+SHOW GLOBAL VARIABLES LIKE 'celltnx%';
+SET GLOBAL celltnx_commit_delay_us = 100;
+SELECT @@global.celltnx_commit_delay_us;
+SET GLOBAL celltnx_commit_delay_us = DEFAULT;
+--error ER_INCORRECT_GLOBAL_LOCAL_VAR
+SET GLOBAL celltnx_mode = 'row';
+
+CREATE TABLE t (id INT PRIMARY KEY, n INT NOT NULL) ENGINE=CELLTNX;
+INSERT INTO t VALUES (1, 0), (2, 0);
+
+--echo # Each commit advances the session's serialization point by one here.
+let $ts0 = query_get_value(SHOW SESSION STATUS LIKE 'Celltnx_last_commit_ts', Value, 1);
+let $c0 = query_get_value(SHOW GLOBAL STATUS LIKE 'Celltnx_commits', Value, 1);
+UPDATE t SET n = 1 WHERE id = 1;
+let $ts1 = query_get_value(SHOW SESSION STATUS LIKE 'Celltnx_last_commit_ts', Value, 1);
+let $c1 = query_get_value(SHOW GLOBAL STATUS LIKE 'Celltnx_commits', Value, 1);
+--expr $dts = $ts1 - $ts0
+--expr $dc = $c1 - $c0
+--echo commit ts advanced by $dts, commits by $dc
+
+--echo # A read-only transaction serializes at its snapshot.
+BEGIN;
+SELECT n FROM t WHERE id = 1;
+COMMIT;
+let $ts2 = query_get_value(SHOW SESSION STATUS LIKE 'Celltnx_last_commit_ts', Value, 1);
+let $rts = query_get_value(SHOW SESSION STATUS LIKE 'Celltnx_last_read_ts', Value, 1);
+--expr $same = $ts2 - $rts
+--echo serialization point minus snapshot: $same
+
+connect (con1, localhost, root,,);
+connect (con2, localhost, root,,);
+
+--echo # A conflict at commit counts once.
+let $x0 = query_get_value(SHOW GLOBAL STATUS LIKE 'Celltnx_conflicts', Value, 1);
+connection con1;
+BEGIN;
+SELECT n FROM t WHERE id = 1;
+UPDATE t SET n = 5 WHERE id = 2;
+connection con2;
+UPDATE t SET n = 7 WHERE id = 1;
+connection con1;
+--error ER_LOCK_DEADLOCK
+COMMIT;
+connection default;
+let $x1 = query_get_value(SHOW GLOBAL STATUS LIKE 'Celltnx_conflicts', Value, 1);
+--expr $dx = $x1 - $x0
+--echo conflicts: $dx
+
+--echo # A FOR UPDATE wait counts a wait and a refresh.
+let $w0 = query_get_value(SHOW GLOBAL STATUS LIKE 'Celltnx_lock_waits', Value, 1);
+let $r0 = query_get_value(SHOW GLOBAL STATUS LIKE 'Celltnx_refreshes', Value, 1);
+connection con1;
+BEGIN;
+SELECT n FROM t WHERE id = 1 FOR UPDATE;
+connection con2;
+BEGIN;
+send SELECT n FROM t WHERE id = 1 FOR UPDATE;
+connection default;
+let $wait_condition = SELECT COUNT(*) = 1 FROM information_schema.processlist
+  WHERE info LIKE 'SELECT n FROM t WHERE id = 1 FOR UPDATE';
+--source include/wait_condition.inc
+connection con1;
+UPDATE t SET n = 8 WHERE id = 1;
+COMMIT;
+connection con2;
+reap;
+COMMIT;
+connection default;
+let $w1 = query_get_value(SHOW GLOBAL STATUS LIKE 'Celltnx_lock_waits', Value, 1);
+let $r1 = query_get_value(SHOW GLOBAL STATUS LIKE 'Celltnx_refreshes', Value, 1);
+--expr $dw = $w1 - $w0
+--expr $dr = $r1 - $r0
+--echo lock waits: $dw, refreshes: $dr
+
+disconnect con1;
+disconnect con2;
+DROP TABLE t;

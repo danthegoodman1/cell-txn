@@ -1,0 +1,59 @@
+CREATE TABLE users (id INT PRIMARY KEY, name VARCHAR(40), email VARCHAR(60), wallet INT NOT NULL,
+CHECK (wallet >= 0)) ENGINE=CELLTNX;
+INSERT INTO users VALUES (1, 'ann', 'a@x', 5), (2, 'bob', 'b@x', 20);
+# Scenario 1: a read of A.email and a write of A.name merge with a write of A.wallet.
+BEGIN;
+SELECT email FROM users WHERE id = 1;
+email
+a@x
+UPDATE users SET name = 'ann2' WHERE id = 1;
+UPDATE users SET wallet = 7 WHERE id = 1;
+COMMIT;
+SELECT * FROM users WHERE id = 1;
+id	name	email	wallet
+1	ann2	a@x	7
+# Deltas commute: both commit, and the wallet holds both.
+BEGIN;
+UPDATE users SET wallet = wallet + 3 WHERE id = 2;
+BEGIN;
+UPDATE users SET wallet = wallet - 1 WHERE id = 2;
+COMMIT;
+COMMIT;
+SELECT wallet FROM users WHERE id = 2;
+wallet
+22
+# Assigning the same cell is a read and a write: the second commit conflicts.
+BEGIN;
+UPDATE users SET email = 'c1@x' WHERE id = 2;
+UPDATE users SET email = 'c2@x' WHERE id = 2;
+COMMIT;
+ERROR 40001: Deadlock found when trying to get lock; try restarting transaction
+# A delta read elsewhere in its statement is a plain read and write.
+BEGIN;
+UPDATE users SET wallet = wallet + 1 WHERE id = 2 AND wallet > 0;
+UPDATE users SET wallet = wallet + 1 WHERE id = 2;
+COMMIT;
+ERROR 40001: Deadlock found when trying to get lock; try restarting transaction
+# Scenario 8: the CHECK holds for each transaction's view, but the
+# merged wallet would go negative, so the second commit fails it.
+UPDATE users SET wallet = 1 WHERE id = 1;
+BEGIN;
+UPDATE users SET wallet = wallet - 1 WHERE id = 1;
+BEGIN;
+UPDATE users SET wallet = wallet - 1 WHERE id = 1;
+COMMIT;
+COMMIT;
+ERROR HY000: Check constraint 'users_chk_1' is violated.
+SELECT wallet FROM users WHERE id = 1;
+wallet
+0
+# A statement that fails on a delta's base value makes that value a
+# tracked read: a concurrent change to it then conflicts.
+BEGIN;
+UPDATE users SET wallet = wallet - 5 WHERE id = 1;
+ERROR HY000: Check constraint 'users_chk_1' is violated.
+UPDATE users SET name = 'n' WHERE id = 2;
+UPDATE users SET wallet = wallet + 10 WHERE id = 1;
+COMMIT;
+ERROR 40001: Deadlock found when trying to get lock; try restarting transaction
+DROP TABLE users;

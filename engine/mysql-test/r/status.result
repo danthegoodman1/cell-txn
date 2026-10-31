@@ -1,0 +1,52 @@
+SHOW GLOBAL VARIABLES LIKE 'celltnx%';
+Variable_name	Value
+celltnx_bucket_bits	0
+celltnx_commit_delay_us	0
+celltnx_durable	ON
+celltnx_group_wait_us	500
+celltnx_lock_wait_ms	1000
+celltnx_mode	cell+delta
+celltnx_sync	ON
+SET GLOBAL celltnx_commit_delay_us = 100;
+SELECT @@global.celltnx_commit_delay_us;
+@@global.celltnx_commit_delay_us
+100
+SET GLOBAL celltnx_commit_delay_us = DEFAULT;
+SET GLOBAL celltnx_mode = 'row';
+ERROR HY000: Variable 'celltnx_mode' is a read only variable
+CREATE TABLE t (id INT PRIMARY KEY, n INT NOT NULL) ENGINE=CELLTNX;
+INSERT INTO t VALUES (1, 0), (2, 0);
+# Each commit advances the session's serialization point by one here.
+UPDATE t SET n = 1 WHERE id = 1;
+commit ts advanced by 1, commits by 1
+# A read-only transaction serializes at its snapshot.
+BEGIN;
+SELECT n FROM t WHERE id = 1;
+n
+1
+COMMIT;
+serialization point minus snapshot: 0
+# A conflict at commit counts once.
+BEGIN;
+SELECT n FROM t WHERE id = 1;
+n
+1
+UPDATE t SET n = 5 WHERE id = 2;
+UPDATE t SET n = 7 WHERE id = 1;
+COMMIT;
+ERROR 40001: Deadlock found when trying to get lock; try restarting transaction
+conflicts: 1
+# A FOR UPDATE wait counts a wait and a refresh.
+BEGIN;
+SELECT n FROM t WHERE id = 1 FOR UPDATE;
+n
+7
+BEGIN;
+SELECT n FROM t WHERE id = 1 FOR UPDATE;
+UPDATE t SET n = 8 WHERE id = 1;
+COMMIT;
+n
+8
+COMMIT;
+lock waits: 1, refreshes: 1
+DROP TABLE t;

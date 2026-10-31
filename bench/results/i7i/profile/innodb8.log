@@ -1,0 +1,4 @@
+innodb-serializable ledger clients=8      16568 commits/s  retries/txn 0.00  p50 264.415µs  p99 2.172726ms  errors 0
+audit: ledger data consistent after 497032 transactions
+innodb-repeatable-read ledger clients=8      22875 commits/s  retries/txn 0.00  p50 238.456µs  p99 1.796563ms  errors 0
+audit: ledger data consistent after 686242 transactions

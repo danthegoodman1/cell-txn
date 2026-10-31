@@ -1,0 +1,85 @@
+# Column-level conflicts and commuting deltas in cell+delta mode, the
+# engine's default: scenarios 1, 7 and 8 of tests/txn_test.cc over SQL.
+
+CREATE TABLE users (id INT PRIMARY KEY, name VARCHAR(40), email VARCHAR(60), wallet INT NOT NULL,
+  CHECK (wallet >= 0)) ENGINE=CELLTNX;
+INSERT INTO users VALUES (1, 'ann', 'a@x', 5), (2, 'bob', 'b@x', 20);
+
+connect (con1, localhost, root,,);
+connect (con2, localhost, root,,);
+
+--echo # Scenario 1: a read of A.email and a write of A.name merge with a write of A.wallet.
+connection con1;
+BEGIN;
+SELECT email FROM users WHERE id = 1;
+UPDATE users SET name = 'ann2' WHERE id = 1;
+connection con2;
+UPDATE users SET wallet = 7 WHERE id = 1;
+connection con1;
+COMMIT;
+SELECT * FROM users WHERE id = 1;
+
+--echo # Deltas commute: both commit, and the wallet holds both.
+connection con1;
+BEGIN;
+UPDATE users SET wallet = wallet + 3 WHERE id = 2;
+connection con2;
+BEGIN;
+UPDATE users SET wallet = wallet - 1 WHERE id = 2;
+COMMIT;
+connection con1;
+COMMIT;
+SELECT wallet FROM users WHERE id = 2;
+
+--echo # Assigning the same cell is a read and a write: the second commit conflicts.
+connection con1;
+BEGIN;
+UPDATE users SET email = 'c1@x' WHERE id = 2;
+connection con2;
+UPDATE users SET email = 'c2@x' WHERE id = 2;
+connection con1;
+--error ER_LOCK_DEADLOCK
+COMMIT;
+
+--echo # A delta read elsewhere in its statement is a plain read and write.
+connection con1;
+BEGIN;
+UPDATE users SET wallet = wallet + 1 WHERE id = 2 AND wallet > 0;
+connection con2;
+UPDATE users SET wallet = wallet + 1 WHERE id = 2;
+connection con1;
+--error ER_LOCK_DEADLOCK
+COMMIT;
+
+--echo # Scenario 8: the CHECK holds for each transaction's view, but the
+--echo # merged wallet would go negative, so the second commit fails it.
+UPDATE users SET wallet = 1 WHERE id = 1;
+connection con1;
+BEGIN;
+UPDATE users SET wallet = wallet - 1 WHERE id = 1;
+connection con2;
+BEGIN;
+UPDATE users SET wallet = wallet - 1 WHERE id = 1;
+COMMIT;
+connection con1;
+--error ER_CHECK_CONSTRAINT_VIOLATED
+COMMIT;
+SELECT wallet FROM users WHERE id = 1;
+
+--echo # A statement that fails on a delta's base value makes that value a
+--echo # tracked read: a concurrent change to it then conflicts.
+connection con1;
+BEGIN;
+--error ER_CHECK_CONSTRAINT_VIOLATED
+UPDATE users SET wallet = wallet - 5 WHERE id = 1;
+UPDATE users SET name = 'n' WHERE id = 2;
+connection con2;
+UPDATE users SET wallet = wallet + 10 WHERE id = 1;
+connection con1;
+--error ER_LOCK_DEADLOCK
+COMMIT;
+
+disconnect con1;
+disconnect con2;
+connection default;
+DROP TABLE users;

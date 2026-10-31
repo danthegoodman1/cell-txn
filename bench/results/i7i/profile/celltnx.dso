@@ -1,0 +1,25 @@
+    21.76%  connection       mysqld              
+                                  0x7db92a8abe6b
+                                  0x7db92a93f55c
+    19.15%  swapper          [kernel.kallsyms]   
+    16.36%  sqlbench         sqlbench            
+    15.46%  connection       [kernel.kallsyms]   
+                                  0x7db92a8a8977
+    13.83%  sqlbench         [kernel.kallsyms]   
+     5.65%  connection       libc.so.6           
+     3.27%  connection       ha_celltnx.so       
+     1.17%  mysqld           [kernel.kallsyms]   
+     0.87%  connection       libcrypto.so.3      
+     0.67%  mysqld           ha_celltnx.so       
+     0.60%  mysqld           libc.so.6           
+     0.46%  connection       [vdso]              
+     0.24%  connection       libstdc++.so.6.0.35 
+     0.17%  lionturtle-comm  libc.so.6           
+     0.16%  sqlbench         [vdso]              
+     0.06%  lionturtle-comm  ha_celltnx.so       
+     0.03%  lionturtle-merg  ha_celltnx.so       
+     0.02%  lionturtle-merg  [kernel.kallsyms]   
+     0.01%  lionturtle-comm  [kernel.kallsyms]   
+     0.01%  perf             [kernel.kallsyms]   
+     0.01%  lionturtle-merg  libc.so.6           
+     0.01%  lionturtle-appl  libc.so.6           

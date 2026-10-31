@@ -1,0 +1,13 @@
+# lionturtle is Rust built without ThreadSanitizer instrumentation. TSan
+# sees its memory accesses through libc's interceptors but none of its
+# atomics or fences, so every value it hands between threads looks like a
+# race, including bytes the store then reads in C++. These patterns drop
+# any report with a lionturtle or Rust frame in either stack. Built with
+# -Zsanitizer=thread, lionturtle's own tests report only its memtable
+# B-tree's (bbtree) deliberate optimistic reads, which validate a node's
+# version after reading it unlatched; with an instrumented lionturtle,
+# race:bbtree:: would be the only suppression needed.
+race:lionturtle/src/
+race:crossbeam
+race:parking_lot
+race:/rustc/
