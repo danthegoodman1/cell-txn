@@ -1,0 +1,60 @@
+     7.21%  swapper          [k] intel_idle
+     2.99%  sqlbench         [.] runtime.procyieldAsm.abi0
+     2.17%  sqlbench         [.] runtime.lock2
+     2.08%  connection       [.] my_sql_parser_parse(THD*, Parse_tree_root**)
+                                  0x7db92a8abe6b
+                                  0x7db92a93f55c
+     2.08%  sqlbench         [.] runtime.stealWork
+     1.25%  connection       [k] native_queued_spin_lock_slowpath
+                          0x7db92a8a8977
+     0.86%  connection       [.] malloc
+     0.77%  swapper          [k] pvclock_clocksource_read_nowd
+     0.68%  connection       [.] pthread_mutex_unlock
+     0.59%  connection       [.] pthread_mutex_lock
+     0.57%  sqlbench         [.] runtime.unlock2Wake
+     0.54%  sqlbench         [.] runtime.findRunnable
+     0.49%  connection       [.] celltnx::Skiplist<celltnx::Chain>::Get(std::basic_string_view<char, std::char_traits<char> >, std::function<void ()> const*) const [clone .isra.0]
+     0.49%  connection       [k] __raw_spin_lock_irqsave
+     0.46%  swapper          [k] intel_idle_xstate
+     0.43%  swapper          [k] psi_group_change
+     0.41%  connection       [k] restore_fpregs_from_fpstate
+     0.40%  sqlbench         [k] futex_wake
+     0.39%  swapper          [k] update_load_avg
+     0.39%  sqlbench         [.] runtime.runqgrab
+     0.38%  connection       [.] create_metadata_lock(void*, MDL_key const*, int, int, int, char const*, unsigned int)
+     0.38%  swapper          [k] menu_select
+     0.38%  swapper          [k] update_cfs_group
+     0.37%  sqlbench         [.] runtime.unlock2
+     0.35%  connection       [k] __schedule
+     0.34%  sqlbench         [k] __schedule
+     0.34%  swapper          [k] poll_idle
+     0.33%  sqlbench         [k] select_idle_core.isra.0
+     0.32%  swapper          [k] llist_reverse_order
+     0.30%  connection       [.] dispatch_command(THD*, COM_DATA const*, enum_server_command)
+     0.30%  sqlbench         [.] runtime.checkTimersNoP
+     0.29%  swapper          [k] flush_smp_call_function_queue
+     0.29%  sqlbench         [k] pvclock_clocksource_read_nowd
+     0.29%  swapper          [k] switch_mm_irqs_off
+     0.29%  swapper          [k] enqueue_task_fair
+     0.28%  sqlbench         [.] runtime.mallocgcSmallScanNoHeader
+     0.28%  connection       [.] celltnx::Txn::CommitLocked(std::vector<celltnx::Txn::WSlot, std::allocator<celltnx::Txn::WSlot> >&)
+     0.28%  swapper          [k] __schedule
+     0.27%  sqlbench         [k] _raw_spin_lock
+     0.27%  connection       [k] entry_SYSCALL_64
+     0.27%  connection       [.] THD::cleanup_after_query()
+     0.26%  sqlbench         [k] entry_SYSCALL_64
+     0.26%  connection       [k] _raw_spin_lock
+     0.25%  connection       [.] my_lfind(std::atomic<LF_SLIST*>*, int (*)(unsigned char const*, unsigned long, unsigned char const*, unsigned long), CHARSET_INFO*, unsigned int, unsigned char const*, unsigned long, CURSOR*, LF_PINS*)
+     0.25%  swapper          [k] enqueue_entity
+     0.25%  connection       [.] Lex_hash::get_hash_symbol(char const*, unsigned int) const
+     0.25%  connection       [.] 0x00000000001b2b65
+     0.25%  sqlbench         [k] try_to_wake_up
+     0.25%  connection       [k] skb_release_data
+     0.24%  swapper          [k] _raw_spin_lock
+     0.24%  swapper          [k] __update_load_avg_se
+     0.24%  connection       [.] THD::store_cached_properties(THD::cached_properties)
+     0.23%  sqlbench         [k] __raw_spin_lock_irqsave
+     0.23%  connection       [.] check_stack_overrun(THD const*, long, unsigned char*)
+     0.23%  sqlbench         [k] ttwu_queue_wakelist
+     0.23%  swapper          [k] propagate_entity_load_avg
+     0.23%  swapper          [k] update_rq_clock

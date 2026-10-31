@@ -1,0 +1,40 @@
+CREATE TABLE hits (id INT PRIMARY KEY, n INT NOT NULL, note VARCHAR(10)) ENGINE=CELLTNX;
+INSERT INTO hits VALUES (1, 0, 'a');
+# Two ON DUPLICATE KEY UPDATE increments of one row both commit.
+BEGIN;
+INSERT INTO hits VALUES (1, 1, 'x') ON DUPLICATE KEY UPDATE n = n + 1;
+INSERT INTO hits VALUES (1, 1, 'y') ON DUPLICATE KEY UPDATE n = n + 1;
+COMMIT;
+SELECT * FROM hits;
+id	n	note
+1	2	a
+# A new key inserts, with the delta never applied.
+INSERT INTO hits VALUES (2, 5, 'b') ON DUPLICATE KEY UPDATE n = n + 1;
+SELECT * FROM hits ORDER BY id;
+id	n	note
+1	2	a
+2	5	b
+# An assignment reading n elsewhere makes n a read: the second commit conflicts.
+BEGIN;
+INSERT INTO hits VALUES (1, 1, 'x') ON DUPLICATE KEY UPDATE n = n + 1, note = n;
+INSERT INTO hits VALUES (1, 1, 'y') ON DUPLICATE KEY UPDATE n = n + 1;
+COMMIT;
+ERROR 40001: Deadlock found when trying to get lock; try restarting transaction
+SELECT * FROM hits ORDER BY id;
+id	n	note
+1	3	a
+2	5	b
+# Prepared increments with parameters commute.
+PREPARE inc FROM 'UPDATE hits SET n = n + ? WHERE id = ?';
+SET @k = 10, @id = 2;
+BEGIN;
+EXECUTE inc USING @k, @id;
+PREPARE inc FROM 'UPDATE hits SET n = n + ? WHERE id = ?';
+SET @k = 100, @id = 2;
+EXECUTE inc USING @k, @id;
+COMMIT;
+SELECT * FROM hits ORDER BY id;
+id	n	note
+1	3	a
+2	115	b
+DROP TABLE hits;

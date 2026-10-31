@@ -1,0 +1,67 @@
+CREATE TABLE users (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(40), email VARCHAR(60),
+wallet INT NOT NULL, UNIQUE KEY (email), KEY (name), CHECK (wallet >= 0)) ENGINE=CELLTNX;
+INSERT INTO users (name, email, wallet) VALUES ('ann', 'a@x', 10), ('bob', 'b@x', 20), ('cy', 'c@x', 30);
+UPDATE users SET wallet = wallet + 5 WHERE id = 2;
+DELETE FROM users WHERE id = 3;
+CREATE TABLE gone (id INT PRIMARY KEY) ENGINE=CELLTNX;
+INSERT INTO gone VALUES (1), (2);
+CREATE TABLE emptied (id INT PRIMARY KEY) ENGINE=CELLTNX;
+INSERT INTO emptied VALUES (1);
+TRUNCATE TABLE emptied;
+INSERT INTO emptied VALUES (7);
+CREATE TABLE before_rename (id INT PRIMARY KEY, v BLOB) ENGINE=CELLTNX;
+INSERT INTO before_rename VALUES (1, REPEAT('x', 5000)), (2, NULL);
+RENAME TABLE before_rename TO renamed;
+CREATE TABLE keyless (a INT, b VARCHAR(10)) ENGINE=CELLTNX;
+INSERT INTO keyless VALUES (1, 'one'), (1, 'one'), (NULL, NULL);
+# restart
+SELECT * FROM users ORDER BY id;
+id	name	email	wallet
+1	ann	a@x	10
+2	bob	b@x	25
+SELECT id FROM users WHERE email = 'b@x';
+id
+2
+SELECT id FROM users FORCE INDEX (name) WHERE name = 'ann';
+id
+1
+INSERT INTO users (name, email, wallet) VALUES ('dup', 'a@x', 1);
+ERROR 23000: Duplicate entry 'a@x' for key 'users.email'
+UPDATE users SET wallet = -1 WHERE id = 1;
+ERROR HY000: Check constraint 'users_chk_1' is violated.
+INSERT INTO users (name, email, wallet) VALUES ('dee', 'd@x', 40);
+SELECT id, name FROM users WHERE name = 'dee';
+id	name
+4	dee
+SELECT * FROM emptied;
+id
+7
+SELECT id, LENGTH(v) FROM renamed ORDER BY id;
+id	LENGTH(v)
+1	5000
+2	NULL
+SELECT * FROM keyless ORDER BY a, b;
+a	b
+NULL	NULL
+1	one
+1	one
+INSERT INTO keyless VALUES (2, 'two');
+SELECT COUNT(*) FROM keyless;
+COUNT(*)
+4
+DROP TABLE gone;
+CREATE TABLE gone (id INT PRIMARY KEY) ENGINE=CELLTNX;
+INSERT INTO gone VALUES (3);
+# restart
+SELECT * FROM gone;
+id
+3
+SELECT COUNT(*) FROM keyless;
+COUNT(*)
+4
+SELECT id, name FROM users ORDER BY id;
+id	name
+1	ann
+2	bob
+4	dee
+DROP TABLE users, gone, emptied, renamed, keyless;

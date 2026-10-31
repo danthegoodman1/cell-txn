@@ -1,0 +1,106 @@
+CREATE TABLE counters (id INT PRIMARY KEY, n INT NOT NULL, note VARCHAR(20)) ENGINE=CELLTNX;
+INSERT INTO counters VALUES (1, 0, 'a'), (2, 0, 'b');
+# con2 waits for con1's lock, then reads and increments con1's result.
+BEGIN;
+SELECT n FROM counters WHERE id = 1 FOR UPDATE;
+n
+0
+BEGIN;
+SELECT note FROM counters WHERE id = 2;
+note
+b
+SELECT n FROM counters WHERE id = 1 FOR UPDATE;
+UPDATE counters SET n = 1 WHERE id = 1;
+COMMIT;
+n
+1
+UPDATE counters SET n = 2 WHERE id = 1;
+COMMIT;
+SELECT * FROM counters ORDER BY id;
+id	n	note
+1	2	a
+2	0	b
+# If something con2 read earlier changed meanwhile, the wait ends in a
+# conflict at once.
+BEGIN;
+SELECT n FROM counters WHERE id = 1 FOR UPDATE;
+n
+2
+UPDATE counters SET note = 'c' WHERE id = 2;
+BEGIN;
+SELECT note FROM counters WHERE id = 2;
+note
+b
+SELECT n FROM counters WHERE id = 1 FOR UPDATE;
+UPDATE counters SET n = 3 WHERE id = 1;
+COMMIT;
+ERROR 40001: Deadlock found when trying to get lock; try restarting transaction
+SELECT * FROM counters ORDER BY id;
+id	n	note
+1	3	a
+2	0	c
+# A transaction already holding a lock reads without waiting, and a
+# wait past celltnx_lock_wait_ms reads anyway; validation decides at
+# commit.
+SET GLOBAL celltnx_lock_wait_ms = 50;
+BEGIN;
+SELECT n FROM counters WHERE id = 1 FOR UPDATE;
+n
+3
+BEGIN;
+SELECT n FROM counters WHERE id = 2 FOR UPDATE;
+n
+0
+SELECT n FROM counters WHERE id = 1 FOR UPDATE;
+n
+3
+UPDATE counters SET n = 10 WHERE id = 2;
+COMMIT;
+UPDATE counters SET n = n + 1 WHERE id = 1;
+COMMIT;
+BEGIN;
+SELECT n FROM counters WHERE id = 1 FOR UPDATE;
+n
+4
+BEGIN;
+SELECT n FROM counters WHERE id = 1 FOR UPDATE;
+n
+4
+UPDATE counters SET n = 20 WHERE id = 1;
+UPDATE counters SET n = 30 WHERE id = 1;
+COMMIT;
+COMMIT;
+ERROR 40001: Deadlock found when trying to get lock; try restarting transaction
+SELECT * FROM counters ORDER BY id;
+id	n	note
+1	30	a
+2	10	c
+SET GLOBAL celltnx_lock_wait_ms = DEFAULT;
+# A delta on a column a FOR UPDATE reader holds waits for it, so the
+# reader's read-modify-write commits; a delta on another column of the
+# row does not wait.
+ALTER TABLE counters ADD COLUMN total INT NOT NULL DEFAULT 0;
+BEGIN;
+SELECT n FROM counters WHERE id = 1 FOR UPDATE;
+n
+30
+UPDATE counters SET total = total + 5 WHERE id = 1;
+UPDATE counters SET n = n + 100 WHERE id = 1;
+UPDATE counters SET n = 31 WHERE id = 1;
+COMMIT;
+SELECT * FROM counters ORDER BY id;
+id	n	note	total
+1	131	a	5
+2	10	c	0
+# Rollback releases the lock.
+BEGIN;
+SELECT n FROM counters WHERE id = 1 FOR UPDATE;
+n
+131
+ROLLBACK;
+BEGIN;
+SELECT n FROM counters WHERE id = 1 FOR UPDATE;
+n
+131
+COMMIT;
+DROP TABLE counters;

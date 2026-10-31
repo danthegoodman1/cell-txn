@@ -1,0 +1,60 @@
+    11.35%  connection       [.] rw_lock_s_lock_spin(rw_lock_t*, unsigned long, ut::Location)
+                                                                   0x78d646eabe6b
+                                                                   0x78d646f3f55c
+     7.73%  connection       [.] rw_lock_x_lock_func(rw_lock_t*, unsigned long, ut::Location)
+                                             0x78d646eabe6b
+                                             0x78d646f3f55c
+     5.35%  connection       [.] log_write_up_to(log_t&, unsigned long, bool) [clone .part.0]
+                                  0x78d646eabe6b
+                                  0x78d646f3f55c
+     3.03%  connection       [.] PolicyMutex<TTASEventMutex<GenericPolicy> >::enter(unsigned int, unsigned int, char const*, unsigned int)
+                                             0x78d646eabe6b
+                                             0x78d646f3f55c
+     2.33%  swapper          [k] intel_idle
+     1.87%  connection       [.] void log_sync_point<40ul>(char const (&) [40ul]) [clone .lto_priv.1] [clone .lto_priv.0]
+                                             0x78d646eabe6b
+                                             0x78d646f3f55c
+     1.60%  sqlbench         [.] runtime.procyieldAsm.abi0
+     1.36%  connection       [.] my_sql_parser_parse(THD*, Parse_tree_root**)
+                                  0x78d646eabe6b
+                                  0x78d646f3f55c
+     0.99%  connection       [.] rw_lock_x_lock_wait_func(rw_lock_t*, long, char const*, unsigned long)
+                                  0x78d646eabe6b
+                                  0x78d646f3f55c
+     0.96%  sqlbench         [.] runtime.stealWork
+     0.76%  sqlbench         [.] runtime.lock2
+     0.67%  ib_log_writer    [.] log_writer(log_t*)
+                       0x78d6472f7439
+                       0x78d646eabe6b
+                       0x78d646f3f55c
+     0.57%  connection       [k] native_queued_spin_lock_slowpath
+     0.35%  swapper          [k] pvclock_clocksource_read_nowd
+     0.34%  connection       [.] pthread_mutex_unlock
+     0.33%  connection       [.] malloc
+     0.33%  connection       [k] restore_fpregs_from_fpstate
+     0.32%  connection       [.] rw_lock_s_lock(rw_lock_t*, ut::Location) [clone .lto_priv.13] [clone .lto_priv.0]
+     0.32%  connection       [.] pthread_mutex_lock
+     0.32%  sqlbench         [.] runtime.runqgrab
+     0.31%  connection       [k] __raw_spin_lock_irqsave
+     0.28%  ib_log_writer    [.] log_advance_ready_for_write_lsn(log_t&)
+     0.28%  sqlbench         [.] runtime.findRunnable
+     0.25%  connection       [k] __schedule
+     0.25%  connection       [.] create_metadata_lock(void*, MDL_key const*, int, int, int, char const*, unsigned int)
+     0.24%  sqlbench         [k] __schedule
+     0.23%  sqlbench         [.] runtime.unlock2Wake
+     0.22%  connection       [.] buf_page_get_gen(page_id_t const&, page_size_t const&, unsigned long, buf_block_t*, Page_fetch, ut::Location, mtr_t*, bool)
+     0.22%  connection       [.] lock_rec_has_expl(unsigned long, page_id_t, unsigned int, trx_t const*)
+     0.21%  sqlbench         [k] futex_wake
+     0.21%  connection       [.] rw_lock_s_unlock_gen(rw_lock_t*, unsigned long) [clone .isra.0]
+     0.21%  sqlbench         [k] native_queued_spin_lock_slowpath
+     0.21%  connection       [.] dispatch_command(THD*, COM_DATA const*, enum_server_command)
+     0.20%  sqlbench         [k] select_idle_core.isra.0
+     0.19%  sqlbench         [k] pvclock_clocksource_read_nowd
+     0.19%  swapper          [k] update_load_avg
+     0.19%  connection       [k] psi_group_change
+     0.19%  ib_log_flush     [.] log_flusher(log_t*)
+     0.19%  connection       [.] rw_lock_s_lock_gen(rw_lock_t*, unsigned long, ut::Location) [clone .lto_priv.0] [clone .lto_priv.0]
+     0.18%  sqlbench         [k] psi_group_change
+     0.18%  connection       [k] entry_SYSCALL_64
+     0.18%  connection       [k] _raw_spin_lock
+     0.18%  sqlbench         [k] enqueue_task_fair

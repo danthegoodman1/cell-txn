@@ -1,0 +1,2 @@
+innodb-serializable users  clients=128   130469 commits/s  retries/txn 0.00  p50 560.371µs  p99 6.736854ms  errors 0
+innodb-repeatable-read users  clients=128   120469 commits/s  retries/txn 0.00  p50 623.967µs  p99 6.660142ms  errors 0
