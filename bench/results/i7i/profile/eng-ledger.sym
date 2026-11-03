@@ -1,0 +1,40 @@
+     4.18%  [.] my_sql_parser_parse(THD*, Parse_tree_root**)
+                                  0x77d2a24abe6b
+                                  0x77d2a253f55c
+     1.75%  [.] celltnx::Skiplist<celltnx::Chain>::Get(std::basic_string_view<char, std::char_traits<char> >, std::function<void ()> const*) const [clone .isra.0]
+                                  0x77d2a24abe6b
+                                  0x77d2a253f55c
+     1.56%  [.] malloc
+     1.09%  [k] native_write_msr
+     1.06%  [k] __raw_spin_lock_irqsave
+     1.05%  [k] native_queued_spin_lock_slowpath
+                                  0x77d2a24b4792
+                                             0x77d2a24abe6b
+                                             0x77d2a253f55c
+     0.97%  [.] pthread_mutex_lock
+     0.95%  [.] pthread_mutex_unlock
+     0.89%  [.] celltnx::Txn::CommitLocked(std::vector<celltnx::Txn::WSlot, std::allocator<celltnx::Txn::WSlot> >&)
+     0.84%  [.] create_metadata_lock(void*, MDL_key const*, int, int, int, char const*, unsigned int)
+     0.83%  [.] 0x00000000001b2b65
+     0.75%  [.] dispatch_command(THD*, COM_DATA const*, enum_server_command)
+     0.68%  [.] lex_one_token(Lexer_yystype*, THD*)
+     0.68%  [.] <bbtree::tree::node::internal::Internal<alloc::vec::Vec<u8>, lionturtle::memtable::Versions, bbtree::tree::node::latch::Latched<bbtree::inline_key::Auto>>>::route_tied::<alloc::vec::Vec<u8>>
+     0.61%  [k] skb_release_data
+     0.60%  [.] my_lfind(std::atomic<LF_SLIST*>*, int (*)(unsigned char const*, unsigned long, unsigned char const*, unsigned long), CHARSET_INFO*, unsigned int, unsigned char const*, unsigned long, CURSOR*, LF_PINS*)
+     0.55%  [.] cfree
+     0.54%  [.] THD::store_cached_properties(THD::cached_properties)
+     0.51%  [.] mysql_execute_command(THD*, bool)
+     0.51%  [k] tcp_recvmsg_locked
+     0.50%  [.] pfs_end_statement_vc(PSI_statement_locker*, void*)
+     0.49%  [k] entry_SYSCALL_64
+     0.49%  [k] restore_fpregs_from_fpstate
+     0.47%  [.] Lex_hash::get_hash_symbol(char const*, unsigned int) const
+     0.46%  [k] tcp_rcv_established
+     0.45%  [k] __fget_files
+     0.44%  [.] pfs_start_statement_vc(PSI_statement_locker*, char const*, unsigned int, char const*, unsigned int)
+     0.43%  [.] celltnx::Txn::Snapshot(celltnx::Node<celltnx::Chain>*) const
+     0.42%  [k] skb_defer_free_flush
+     0.42%  [.] 0x0000000000000a09
+     0.41%  [.] check_stack_overrun(THD const*, long, unsigned char*)
+     0.39%  [k] read_tsc
+     0.39%  [k] tcp_poll

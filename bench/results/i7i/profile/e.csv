@@ -1,0 +1,3 @@
+system,workload,warehouses,theta,disjoint,clients,think_ms,commits_per_s,retries_per_txn,p50_ms,p99_ms,errors,hot
+celltnx-cell+delta,tpcc,1,0.90,0.50,32,0.0,3778,0.018,2.55,72.52,0,
+celltnx-cell+delta,ledger,1,0.90,0.50,128,0.0,77968,0.000,1.36,6.60,0,1

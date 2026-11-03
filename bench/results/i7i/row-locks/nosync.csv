@@ -1,0 +1,13 @@
+system,workload,warehouses,theta,disjoint,clients,think_ms,commits_per_s,retries_per_txn,p50_ms,p99_ms,errors,hot
+celltnx-cell+delta-queue,tpcc,1,0.90,0.50,32,0.0,4124,0.018,2.40,65.10,0,
+celltnx-cell+delta-queue,users,1,0.99,0.00,32,0.0,89884,0.001,0.08,3.67,0,
+celltnx-cell+delta-wake-all,tpcc,1,0.90,0.50,32,0.0,4113,0.019,2.35,71.08,0,
+celltnx-cell+delta-wake-all,users,1,0.99,0.00,32,0.0,87990,0.001,0.08,5.11,0,
+celltnx-cell+delta-queue,tpcc,1,0.90,0.50,32,0.0,4095,0.018,2.42,65.23,0,
+celltnx-cell+delta-queue,users,1,0.99,0.00,32,0.0,90315,0.001,0.08,3.66,0,
+celltnx-cell+delta-wake-all,tpcc,1,0.90,0.50,32,0.0,4056,0.018,2.42,70.10,0,
+celltnx-cell+delta-wake-all,users,1,0.99,0.00,32,0.0,87897,0.001,0.08,5.13,0,
+celltnx-cell+delta-queue,tpcc,1,0.90,0.50,32,0.0,4017,0.018,2.42,67.13,0,
+celltnx-cell+delta-queue,users,1,0.99,0.00,32,0.0,91582,0.001,0.08,3.54,0,
+celltnx-cell+delta-wake-all,tpcc,1,0.90,0.50,32,0.0,4182,0.018,2.37,68.11,0,
+celltnx-cell+delta-wake-all,users,1,0.99,0.00,32,0.0,88670,0.001,0.08,5.10,0,

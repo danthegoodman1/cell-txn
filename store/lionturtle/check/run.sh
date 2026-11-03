@@ -14,12 +14,12 @@ native="-lutil -lrt -lpthread -lm -ldl"
 c++ -std=c++20 -O2 -Wall -Wextra -Werror -I"$lt/lionturtle-c/include" "$here/usecase.cc" \
 	"$lt/target/release/liblionturtle_c.a" $native -o "$bin/usecase"
 cc -std=c11 -O2 -Wall -Wextra -Werror -fPIC -shared "$here/failsync.c" -ldl -o "$bin/failsync.so"
-c++ -std=c++20 -O2 -Wall -Wextra -Werror -fPIC -fvisibility=hidden -shared -I"$lt/lionturtle-c/include" \
+c++ -std=c++20 -O2 -Wall -Wextra -Werror -fPIC -fvisibility=hidden -fvisibility-inlines-hidden -shared -I"$lt/lionturtle-c/include" \
 	"$here/plugin.cc" "$lt/target/release/liblionturtle_c.a" -Wl,--exclude-libs,ALL -Wl,-z,defs $native \
 	-o "$bin/plugin.so"
 c++ -std=c++20 -O2 -Wall -Wextra -Werror "$here/host.cc" -ldl -o "$bin/host"
 
-exports=$(nm -D --defined-only "$bin/plugin.so" | awk '{print $3}' | grep -cv '^st_')
+exports=$(nm -D --defined-only "$bin/plugin.so" | awk '!/ st_/ {n++} END {print n + 0}')
 [ "$exports" = 0 ] || { echo "plugin.so exports $exports symbols beyond its own" >&2; exit 1; }
 echo "plugin: links as a shared object exporting only its own symbols"
 

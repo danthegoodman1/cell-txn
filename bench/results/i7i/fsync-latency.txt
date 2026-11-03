@@ -1,1 +1,1 @@
-fdatasync 4 KiB, 5000 writes: p50 18.0 us, p90 19.6 us, p99 369.6 us, mean 26.7 us
+fdatasync 4 KiB, 5000 writes: p50 18.1 us, p90 19.7 us, p99 95.5 us, mean 20.0 us

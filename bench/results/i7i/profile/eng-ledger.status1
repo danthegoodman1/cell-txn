@@ -1,0 +1,10 @@
+Celltnx_bucket_conflicts	0
+Celltnx_check_failures	475
+Celltnx_commit_lock_hold_ns	9953097018
+Celltnx_commit_lock_wait_ns	1385521963046
+Celltnx_commits	1398094
+Celltnx_conflicts	0
+Celltnx_lock_timeouts	0
+Celltnx_lock_waits	0
+Celltnx_refresh_conflicts	0
+Celltnx_refreshes	0

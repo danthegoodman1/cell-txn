@@ -1,25 +1,25 @@
-    53.54%  connection       mysqld             
-                                             0x78d646eabe6b
-                                             0x78d646f3f55c
-    11.29%  connection       [kernel.kallsyms]  
-     9.72%  sqlbench         [kernel.kallsyms]  
-     8.66%  sqlbench         sqlbench           
-     7.31%  swapper          [kernel.kallsyms]  
-     2.88%  connection       libc.so.6          
-     1.32%  ib_log_writer    mysqld             
-                       0x78d6472f7439
-                       0x78d646eabe6b
-                       0x78d646f3f55c
-     0.78%  ib_log_fl_notif  [kernel.kallsyms]  
-     0.65%  ib_log_writer    [kernel.kallsyms]  
-     0.63%  ib_srv_purge     mysqld             
-     0.57%  connection       libcrypto.so.3     
-     0.56%  ib_log_flush     [kernel.kallsyms]  
-     0.30%  connection       [vdso]             
-     0.28%  ib_log_flush     mysqld             
-     0.21%  ib_srv_purge     [kernel.kallsyms]  
-     0.14%  ib_srv_lock_to   mysqld             
-     0.14%  ib_log_writer    libc.so.6          
-     0.10%  ib_log_wr_notif  [kernel.kallsyms]  
-     0.10%  ib_srv_lock_to   [kernel.kallsyms]  
-     0.10%  sqlbench         [vdso]             
+    63.07%  connection       mysqld             
+     8.86%  connection       [kernel.kallsyms]  
+     7.77%  sqlbench         [kernel.kallsyms]  
+     6.82%  sqlbench         sqlbench           
+     5.41%  swapper          [kernel.kallsyms]  
+     2.34%  connection       libc.so.6          
+     1.43%  ib_log_writer    mysqld             
+                       0x76e3a2cf7439
+                       0x76e3a28abe6b
+                       0x76e3a293f55c
+     0.55%  ib_log_writer    [kernel.kallsyms]  
+     0.55%  ib_log_fl_notif  [kernel.kallsyms]  
+     0.49%  ib_srv_purge     mysqld             
+     0.47%  connection       libcrypto.so.3     
+     0.43%  ib_log_flush     [kernel.kallsyms]  
+     0.27%  ib_log_flush     mysqld             
+     0.24%  connection       [vdso]             
+     0.17%  ib_srv_purge     [kernel.kallsyms]  
+     0.13%  ib_log_writer    libc.so.6          
+     0.11%  ib_srv_lock_to   mysqld             
+     0.09%  ib_log_wr_notif  [kernel.kallsyms]  
+     0.08%  sqlbench         [vdso]             
+     0.07%  ib_srv_wkr-1     mysqld             
+     0.07%  ib_srv_lock_to   [kernel.kallsyms]  
+     0.07%  connection       libstdc++.so.6.0.35
