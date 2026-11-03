@@ -1,0 +1,66 @@
+celltnx-cell+delta-queue tpcc   clients=128     6267 commits/s  retries/txn 0.02  p50 2.822954ms  p99 152.983713ms  errors 0
+audit: tpcc data consistent after 50139 transactions
+celltnx-cell+delta-queue users  clients=128   119738 commits/s  retries/txn 0.06  p50 396.866µs  p99 12.177038ms  errors 0
+celltnx-cell+delta-queue users  clients=128    76100 commits/s  retries/txn 0.00  p50 285.986µs  p99 16.170068ms  errors 0
+celltnx-cell+delta-queue tpcc   clients=32      3803 commits/s  retries/txn 0.02  p50 2.880101ms  p99 65.771253ms  errors 0
+audit: tpcc data consistent after 30422 transactions
+celltnx-cell+delta-queue users  clients=32    103597 commits/s  retries/txn 0.03  p50 199.15µs  p99 1.574921ms  errors 0
+celltnx-cell+delta-queue users  clients=32     73026 commits/s  retries/txn 0.00  p50 271.132µs  p99 3.332387ms  errors 0
+celltnx-cell+delta-queue tpcc   clients=32      4124 commits/s  retries/txn 0.02  p50 2.404093ms  p99 65.097608ms  errors 0
+audit: tpcc data consistent after 32995 transactions
+celltnx-cell+delta-queue users  clients=32     89884 commits/s  retries/txn 0.00  p50 80.008µs  p99 3.670696ms  errors 0
+celltnx-cell+delta-wake-all tpcc   clients=128     6598 commits/s  retries/txn 0.02  p50 2.599866ms  p99 224.692979ms  errors 0
+audit: tpcc data consistent after 52783 transactions
+celltnx-cell+delta-wake-all users  clients=128    80704 commits/s  retries/txn 0.02  p50 221.809µs  p99 38.505582ms  errors 0
+celltnx-cell+delta-wake-all users  clients=128    34057 commits/s  retries/txn 0.00  p50 268.896µs  p99 70.720446ms  errors 0
+celltnx-cell+delta-wake-all tpcc   clients=32      3896 commits/s  retries/txn 0.02  p50 2.779138ms  p99 70.536126ms  errors 0
+audit: tpcc data consistent after 31170 transactions
+celltnx-cell+delta-wake-all users  clients=32    101244 commits/s  retries/txn 0.03  p50 204.836µs  p99 1.606955ms  errors 0
+celltnx-cell+delta-wake-all users  clients=32     75217 commits/s  retries/txn 0.00  p50 271.11µs  p99 3.167692ms  errors 0
+celltnx-cell+delta-wake-all tpcc   clients=32      4113 commits/s  retries/txn 0.02  p50 2.348758ms  p99 71.079915ms  errors 0
+audit: tpcc data consistent after 32904 transactions
+celltnx-cell+delta-wake-all users  clients=32     87990 commits/s  retries/txn 0.00  p50 80.539µs  p99 5.113308ms  errors 0
+celltnx-cell+delta-queue tpcc   clients=128     6331 commits/s  retries/txn 0.02  p50 2.729274ms  p99 137.305868ms  errors 0
+audit: tpcc data consistent after 50647 transactions
+celltnx-cell+delta-queue users  clients=128   119586 commits/s  retries/txn 0.06  p50 396.986µs  p99 12.09305ms  errors 0
+celltnx-cell+delta-queue users  clients=128    74554 commits/s  retries/txn 0.00  p50 282.721µs  p99 16.460097ms  errors 0
+celltnx-cell+delta-queue tpcc   clients=32      3876 commits/s  retries/txn 0.02  p50 2.844879ms  p99 63.937065ms  errors 0
+audit: tpcc data consistent after 31006 transactions
+celltnx-cell+delta-queue users  clients=32    104404 commits/s  retries/txn 0.03  p50 199.127µs  p99 1.537234ms  errors 0
+celltnx-cell+delta-queue users  clients=32     71068 commits/s  retries/txn 0.00  p50 273.778µs  p99 3.562313ms  errors 0
+celltnx-cell+delta-queue tpcc   clients=32      4095 commits/s  retries/txn 0.02  p50 2.424082ms  p99 65.225599ms  errors 0
+audit: tpcc data consistent after 32760 transactions
+celltnx-cell+delta-queue users  clients=32     90315 commits/s  retries/txn 0.00  p50 79.8µs  p99 3.663079ms  errors 0
+celltnx-cell+delta-wake-all tpcc   clients=128     6677 commits/s  retries/txn 0.02  p50 2.708018ms  p99 199.882357ms  errors 0
+audit: tpcc data consistent after 53416 transactions
+celltnx-cell+delta-wake-all users  clients=128    69155 commits/s  retries/txn 0.02  p50 215.627µs  p99 46.283934ms  errors 0
+celltnx-cell+delta-wake-all users  clients=128    32429 commits/s  retries/txn 0.00  p50 265.864µs  p99 74.636206ms  errors 0
+celltnx-cell+delta-wake-all tpcc   clients=32      3894 commits/s  retries/txn 0.02  p50 2.812317ms  p99 69.508412ms  errors 0
+audit: tpcc data consistent after 31149 transactions
+celltnx-cell+delta-wake-all users  clients=32    101000 commits/s  retries/txn 0.03  p50 204.264µs  p99 1.634613ms  errors 0
+celltnx-cell+delta-wake-all users  clients=32     75966 commits/s  retries/txn 0.00  p50 270.381µs  p99 3.104813ms  errors 0
+celltnx-cell+delta-wake-all tpcc   clients=32      4056 commits/s  retries/txn 0.02  p50 2.417644ms  p99 70.097684ms  errors 0
+audit: tpcc data consistent after 32446 transactions
+celltnx-cell+delta-wake-all users  clients=32     87897 commits/s  retries/txn 0.00  p50 80.864µs  p99 5.12866ms  errors 0
+celltnx-cell+delta-queue tpcc   clients=128     6258 commits/s  retries/txn 0.02  p50 2.896647ms  p99 156.683575ms  errors 0
+audit: tpcc data consistent after 50061 transactions
+celltnx-cell+delta-queue users  clients=128   119194 commits/s  retries/txn 0.06  p50 405.6µs  p99 12.216209ms  errors 0
+celltnx-cell+delta-queue users  clients=128    75318 commits/s  retries/txn 0.00  p50 285.439µs  p99 16.162546ms  errors 0
+celltnx-cell+delta-queue tpcc   clients=32      3720 commits/s  retries/txn 0.02  p50 2.918892ms  p99 71.63336ms  errors 0
+audit: tpcc data consistent after 29756 transactions
+celltnx-cell+delta-queue users  clients=32    101556 commits/s  retries/txn 0.03  p50 203.537µs  p99 1.601249ms  errors 0
+celltnx-cell+delta-queue users  clients=32     74650 commits/s  retries/txn 0.00  p50 266.309µs  p99 3.238209ms  errors 0
+celltnx-cell+delta-queue tpcc   clients=32      4017 commits/s  retries/txn 0.02  p50 2.423538ms  p99 67.131795ms  errors 0
+audit: tpcc data consistent after 32135 transactions
+celltnx-cell+delta-queue users  clients=32     91582 commits/s  retries/txn 0.00  p50 79.465µs  p99 3.544098ms  errors 0
+celltnx-cell+delta-wake-all tpcc   clients=128     6778 commits/s  retries/txn 0.02  p50 2.648175ms  p99 192.864884ms  errors 0
+audit: tpcc data consistent after 54222 transactions
+celltnx-cell+delta-wake-all users  clients=128    77140 commits/s  retries/txn 0.02  p50 216.83µs  p99 40.496984ms  errors 0
+celltnx-cell+delta-wake-all users  clients=128    24868 commits/s  retries/txn 0.00  p50 284.963µs  p99 97.57471ms  errors 0
+celltnx-cell+delta-wake-all tpcc   clients=32      3810 commits/s  retries/txn 0.02  p50 2.868472ms  p99 69.86575ms  errors 0
+audit: tpcc data consistent after 30476 transactions
+celltnx-cell+delta-wake-all users  clients=32    101765 commits/s  retries/txn 0.03  p50 202.943µs  p99 1.605559ms  errors 0
+celltnx-cell+delta-wake-all users  clients=32     76491 commits/s  retries/txn 0.00  p50 270.561µs  p99 3.029692ms  errors 0
+celltnx-cell+delta-wake-all tpcc   clients=32      4182 commits/s  retries/txn 0.02  p50 2.366542ms  p99 68.11359ms  errors 0
+audit: tpcc data consistent after 33452 transactions
+celltnx-cell+delta-wake-all users  clients=32     88670 commits/s  retries/txn 0.00  p50 80.447µs  p99 5.09647ms  errors 0

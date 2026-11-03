@@ -1,0 +1,2 @@
+celltnx-cell+delta tpcc   clients=32      3778 commits/s  retries/txn 0.02  p50 2.550745ms  p99 72.521289ms  errors 0
+audit: tpcc data consistent after 113329 transactions

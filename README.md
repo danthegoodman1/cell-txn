@@ -2,11 +2,11 @@
 
 celltnx is a MySQL 8.4 storage engine that runs every transaction at SERIALIZABLE and tracks conflicts per (row, column) cell. It merges rows at commit and lets increments such as `balance = balance + 10` commute, so transactions that share a hot row still commit side by side. Rows live in memory, and [lionturtle](https://github.com/danthegoodman1/lionturtle) stores them durably.
 
-Against InnoDB at SERIALIZABLE in the same server, with every commit synced to disk, celltnx runs a hot account 40 times as fast and TPC-C at one warehouse 7.7 times as fast. Without contention the two tie, because MySQL, the network and the client set the pace.
+Against InnoDB at SERIALIZABLE in the same server, with every commit synced to disk, celltnx runs a hot account 41 times as fast and TPC-C at one warehouse 7.5 times as fast. Without contention the two tie, because MySQL, the network and the client set the pace.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/images/speedup-dark.png">
-  <img src="docs/images/speedup-light.png" alt="celltnx cell+delta over InnoDB SERIALIZABLE, transactions per second at 128 clients with fsync per commit: hot account with 1 ms pauses 92×, hot account 40×, TPC-C at 1 warehouse 7.7×, TPC-C at 4 warehouses 2.3×, 10 hot accounts 1.9×, heavily skewed users 1.7×, uniform transfers 1.1×, mildly skewed users 1.0×.">
+  <img src="docs/images/speedup-light.png" alt="celltnx cell+delta over InnoDB SERIALIZABLE, transactions per second at 128 clients with fsync per commit: hot account with 1 ms pauses 92×, hot account 41×, TPC-C at 1 warehouse 7.5×, heavily skewed users 2.3×, TPC-C at 4 warehouses 2.3×, 10 hot accounts 1.9×, uniform transfers 1.1×, mildly skewed users 1.1×.">
 </picture>
 
 [BENCHMARKS.md](BENCHMARKS.md) has every result, the profiles and the commands to reproduce them. [DESIGN.md](DESIGN.md#compared-with-innodb) details how celltnx differs from InnoDB.
@@ -33,29 +33,30 @@ These runs used an EC2 i7i.12xlarge (48 vCPUs, one instance-store NVMe drive wit
 
 | Workload | InnoDB SERIALIZABLE | celltnx cell+delta | Speedup |
 |---|--:|--:|--:|
-| Hot account, 1 ms pause between statements | 348 | 32,035 | 92× |
-| Hot account | 1,856 | 75,102 | 40× |
-| TPC-C, 1 warehouse | 842 | 6,482 | 7.7× |
-| TPC-C, 4 warehouses | 3,921 | 8,915 | 2.3× |
-| 10 hot accounts | 39,142 | 74,504 | 1.9× |
-| Users, heavy skew (θ=0.99, 50% disjoint) | 48,317 | 82,979 | 1.7× |
-| Uniform transfers | 71,528 | 76,635 | 1.1× |
-| Users, mild skew (θ=0.5) | 124,198 | 123,054 | 1.0× |
+| Hot account, 1 ms pause between statements | 349 | 32,071 | 92× |
+| Hot account | 1,859 | 76,395 | 41× |
+| TPC-C, 1 warehouse | 863 | 6,439 | 7.5× |
+| Users, heavy skew (θ=0.99, 50% disjoint) | 49,218 | 115,498 | 2.3× |
+| TPC-C, 4 warehouses | 3,981 | 9,255 | 2.3× |
+| 10 hot accounts | 39,906 | 77,043 | 1.9× |
+| Uniform transfers | 72,250 | 77,422 | 1.1× |
+| Users, mild skew (θ=0.5) | 122,287 | 130,639 | 1.1× |
 
 Contention sets the gap. A hot account holds InnoDB under 2,000 transfers a second at every client count, while celltnx merges the balance increments at commit and runs it as fast as uniform transfers. Ledger transfers per second:
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/images/scaling-dark.png">
-  <img src="docs/images/scaling-light.png" alt="Ledger transfers per second at 8, 32, 128 and 256 clients with fsync per commit. One hot account: celltnx 9,964, 55,737, 75,102 and 78,868; InnoDB 1,294, 1,446, 1,856 and 1,613. Uniform transfers: celltnx 8,848, 56,798, 76,635 and 79,143; InnoDB 14,336, 51,799, 71,528 and 54,443.">
+  <img src="docs/images/scaling-light.png" alt="Ledger transfers per second at 8, 32, 128 and 256 clients with fsync per commit. One hot account: celltnx 9,343, 56,464, 76,395 and 79,375; InnoDB 1,419, 1,417, 1,859 and 1,706. Uniform transfers: celltnx 9,799, 56,230, 77,422 and 79,703; InnoDB 14,827, 52,855, 72,250 and 54,771.">
 </picture>
 
-Without contention, the storage engine is not the limit. In a profile of an uncontended 128-client run, celltnx and lionturtle take 5% of the busy CPU. The kernel's loopback networking and thread wake-ups take 38%, MySQL's parser, executor and protocol 36%, and the benchmark client 20%, while half the machine sits idle. Every transaction makes several round trips between the client and MySQL, and those round trips set the pace for both engines. InnoDB reaches the same rate on 2.3 times the CPU.
+Without contention, the storage engine is not the limit. In a profile of an uncontended 128-client run, celltnx and lionturtle take 5% of the busy CPU. The kernel's loopback networking and thread wake-ups take 39%, MySQL's parser, executor and protocol 35%, and the benchmark client 21%, while half the machine sits idle. Every transaction makes several round trips between the client and MySQL, and those round trips set the pace for both engines. InnoDB commits 8% fewer transactions on 2.4 times the CPU.
 
 ### Trade-offs
 
-- **Low concurrency.** Each commit hands off to the store's writer thread and waits to be woken, so at 8 clients InnoDB commits 1.6 times as fast: 14,336 uniform transfers a second against 8,848.
+- **Low concurrency.** Each commit hands off to the store's writer thread and waits to be woken, so at 8 clients InnoDB commits 1.5 to 2.2 times as fast: 14,827 uniform transfers a second at SERIALIZABLE and 21,487 at REPEATABLE READ, against 9,799.
+- **One commit lock.** Every commit validates and installs under one global lock, which caps the ledger near 85,000 transfers a second from 128 clients.
 - **Memory.** Every row stays in memory, so a table must fit in RAM. lionturtle holds the durable copy.
-- **Retries without deltas.** A hot read-modify-write that is neither a delta nor a `FOR UPDATE` read reruns after a conflict at commit. In `row` and `cell` modes, a hot account retries about six times per transfer; at 32 clients without fsync that still runs 3.5 times InnoDB's rate, and a fifteenth of `cell+delta`'s.
+- **Retries without deltas.** A hot read-modify-write that is neither a delta nor a `FOR UPDATE` read reruns after a conflict at commit. In `row` and `cell` modes, a hot account retries about six times per transfer; at 32 clients without fsync that still runs 3.8 times InnoDB's rate, and a fifteenth of `cell+delta`'s.
 - **Scope.** The engine lacks XA, foreign keys, partitioning, replication, online backup and atomic DDL, and a transaction writes either celltnx tables or InnoDB tables.
 
 ## Compared with InnoDB
@@ -134,7 +135,7 @@ bench/median.sh out.csv                           # median of each configuration
 | Path | Contents |
 |---|---|
 | `core/` | transactions, multiversion rows, skiplists, secondary indexes, the commit protocol and the durability queue |
-| `engine/` | the MySQL handler, `ha_celltnx.cc`, and its MTR suite |
+| `engine/` | the MySQL handler, `ha_celltnx.cc`, its `FOR UPDATE` row locks, `row_locks.h`, and its MTR suite |
 | `store/lionturtle/` | the lionturtle store, its fetch script and its stress and crash checks |
 | `check/` | operation recorder and serializability checker |
 | `workload/` | the random, users and TPC-C workloads |

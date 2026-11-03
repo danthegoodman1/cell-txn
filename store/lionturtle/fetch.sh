@@ -4,9 +4,8 @@
 # the header lionturtle-c/include/lionturtle.h.
 # MYSQL_ROOT (default ~/.cache/celltnx) holds the checkout.
 set -euo pipefail
-# lionturtle main with the preallocate_log option (PR #13), which no release
-# tag carries yet.
-commit=5077607daa24d523b3ed4980efaa2cc835ef8779
+# lionturtle v0.5.3.
+commit=c5d937073b36e078b2a1e79ea5eee218e77b3605
 root=${MYSQL_ROOT:-$HOME/.cache/celltnx}
 dir=$root/lionturtle-${commit:0:12}
 if [ ! -d "$dir" ]; then

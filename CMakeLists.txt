@@ -54,9 +54,13 @@ target_link_libraries(workload_test celltnx_workload GTest::gtest_main Threads::
 add_executable(stress_test tests/stress_test.cc)
 target_link_libraries(stress_test celltnx_workload GTest::gtest_main Threads::Threads)
 
+add_executable(row_locks_test tests/row_locks_test.cc)
+target_include_directories(row_locks_test PRIVATE engine core)
+target_link_libraries(row_locks_test GTest::gtest_main Threads::Threads)
+
 # The durable store on lionturtle's C library, which
 # store/lionturtle/fetch.sh builds.
-set(CELLTNX_LIONTURTLE_DIR "$ENV{HOME}/.cache/celltnx/lionturtle-5077607daa24" CACHE PATH "lionturtle checkout")
+set(CELLTNX_LIONTURTLE_DIR "$ENV{HOME}/.cache/celltnx/lionturtle-c5d937073b36" CACHE PATH "lionturtle checkout")
 if(EXISTS "${CELLTNX_LIONTURTLE_DIR}/target/release/liblionturtle_c.a")
   add_library(celltnx_lionturtle store/lionturtle/store.cc)
   target_include_directories(celltnx_lionturtle PUBLIC store/lionturtle PRIVATE "${CELLTNX_LIONTURTLE_DIR}/lionturtle-c/include")
@@ -76,3 +80,4 @@ add_test(NAME vectors_test COMMAND vectors_test)
 add_test(NAME check_test COMMAND check_test)
 add_test(NAME workload_test COMMAND workload_test)
 add_test(NAME stress_test COMMAND stress_test)
+add_test(NAME row_locks_test COMMAND row_locks_test)

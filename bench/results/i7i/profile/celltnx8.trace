@@ -1,7 +1,7 @@
 
  Summary of events:
 
- ib_dict_stats (150097), 4 events, 0.0%
+ ib_dict_stats (354918), 4 events, 0.0%
 
    syscall            calls  errors  total       min       avg       max       stddev
                                      (msec)    (msec)    (msec)    (msec)        (%)
@@ -9,481 +9,479 @@
    futex                  2      1     0.002     0.000     0.001     0.002    100.00%
 
 
- ib_fts_opt (150098), 4 events, 0.0%
+ ib_fts_opt (354919), 4 events, 0.0%
 
    syscall            calls  errors  total       min       avg       max       stddev
                                      (msec)    (msec)    (msec)    (msec)        (%)
    --------------- --------  ------ -------- --------- --------- ---------     ------
-   futex                  2      1     0.001     0.000     0.000     0.001    100.00%
+   futex                  2      1     0.001     0.000     0.001     0.001    100.00%
 
 
- ib_io_wr-1 (150062), 19 events, 0.0%
-
-   syscall            calls  errors  total       min       avg       max       stddev
-                                     (msec)    (msec)    (msec)    (msec)        (%)
-   --------------- --------  ------ -------- --------- --------- ---------     ------
-   io_pgetevents         10      0  5001.268     0.000   500.127  1000.288     14.91%
-
-
- ib_io_ibuf (150037), 20 events, 0.0%
+ ib_srv_wkr-2 (354954), 16 events, 0.0%
 
    syscall            calls  errors  total       min       avg       max       stddev
                                      (msec)    (msec)    (msec)    (msec)        (%)
    --------------- --------  ------ -------- --------- --------- ---------     ------
-   io_pgetevents         10      0  4501.478     0.000   450.148   500.251     11.11%
+   futex                  8      0  3000.223     0.000   375.028  1000.288     48.79%
 
 
- ib_io_rd-1 (150038), 20 events, 0.0%
-
-   syscall            calls  errors  total       min       avg       max       stddev
-                                     (msec)    (msec)    (msec)    (msec)        (%)
-   --------------- --------  ------ -------- --------- --------- ---------     ------
-   io_pgetevents         10      0  4501.000     0.000   450.100   500.200     11.11%
-
-
- ib_io_rd-2 (150039), 20 events, 0.0%
+ ib_io_ibuf (354858), 20 events, 0.0%
 
    syscall            calls  errors  total       min       avg       max       stddev
                                      (msec)    (msec)    (msec)    (msec)        (%)
    --------------- --------  ------ -------- --------- --------- ---------     ------
-   io_pgetevents         10      0  4500.720     0.000   450.072   500.184     11.11%
+   io_pgetevents         10      0  4500.828     0.000   450.083   500.223     11.11%
 
 
- ib_io_rd-3 (150040), 20 events, 0.0%
-
-   syscall            calls  errors  total       min       avg       max       stddev
-                                     (msec)    (msec)    (msec)    (msec)        (%)
-   --------------- --------  ------ -------- --------- --------- ---------     ------
-   io_pgetevents         10      0  4501.295     0.000   450.130   500.251     11.11%
-
-
- ib_io_rd-4 (150041), 20 events, 0.0%
+ ib_io_rd-1 (354859), 20 events, 0.0%
 
    syscall            calls  errors  total       min       avg       max       stddev
                                      (msec)    (msec)    (msec)    (msec)        (%)
    --------------- --------  ------ -------- --------- --------- ---------     ------
-   io_pgetevents         10      0  4500.730     0.000   450.073   500.210     11.11%
+   io_pgetevents         10      0  4500.674     0.000   450.067   500.141     11.11%
 
 
- ib_io_rd-5 (150042), 20 events, 0.0%
-
-   syscall            calls  errors  total       min       avg       max       stddev
-                                     (msec)    (msec)    (msec)    (msec)        (%)
-   --------------- --------  ------ -------- --------- --------- ---------     ------
-   io_pgetevents         10      0  4501.071     0.000   450.107   500.259     11.11%
-
-
- ib_io_rd-6 (150043), 20 events, 0.0%
+ ib_io_rd-2 (354860), 20 events, 0.0%
 
    syscall            calls  errors  total       min       avg       max       stddev
                                      (msec)    (msec)    (msec)    (msec)        (%)
    --------------- --------  ------ -------- --------- --------- ---------     ------
-   io_pgetevents         10      0  4500.559     0.000   450.056   500.079     11.11%
+   io_pgetevents         10      0  4500.529     0.000   450.053   500.063     11.11%
 
 
- ib_io_rd-7 (150044), 20 events, 0.0%
-
-   syscall            calls  errors  total       min       avg       max       stddev
-                                     (msec)    (msec)    (msec)    (msec)        (%)
-   --------------- --------  ------ -------- --------- --------- ---------     ------
-   io_pgetevents         10      0  4500.780     0.000   450.078   500.132     11.11%
-
-
- ib_io_rd-8 (150045), 20 events, 0.0%
+ ib_io_rd-3 (354861), 20 events, 0.0%
 
    syscall            calls  errors  total       min       avg       max       stddev
                                      (msec)    (msec)    (msec)    (msec)        (%)
    --------------- --------  ------ -------- --------- --------- ---------     ------
-   io_pgetevents         10      0  4500.514     0.000   450.051   500.058     11.11%
+   io_pgetevents         10      0  4500.718     0.000   450.072   500.153     11.11%
 
 
- ib_io_rd-9 (150046), 20 events, 0.0%
-
-   syscall            calls  errors  total       min       avg       max       stddev
-                                     (msec)    (msec)    (msec)    (msec)        (%)
-   --------------- --------  ------ -------- --------- --------- ---------     ------
-   io_pgetevents         10      0  4501.256     0.000   450.126   500.231     11.11%
-
-
- ib_io_rd-10 (150047), 20 events, 0.0%
+ ib_io_rd-4 (354862), 20 events, 0.0%
 
    syscall            calls  errors  total       min       avg       max       stddev
                                      (msec)    (msec)    (msec)    (msec)        (%)
    --------------- --------  ------ -------- --------- --------- ---------     ------
-   io_pgetevents         10      0  4500.752     0.000   450.075   500.216     11.11%
+   io_pgetevents         10      0  4500.626     0.000   450.063   500.168     11.11%
 
 
- ib_io_rd-11 (150048), 20 events, 0.0%
-
-   syscall            calls  errors  total       min       avg       max       stddev
-                                     (msec)    (msec)    (msec)    (msec)        (%)
-   --------------- --------  ------ -------- --------- --------- ---------     ------
-   io_pgetevents         10      0  4500.487     0.000   450.049   500.061     11.11%
-
-
- ib_io_rd-12 (150049), 20 events, 0.0%
+ ib_io_rd-5 (354863), 20 events, 0.0%
 
    syscall            calls  errors  total       min       avg       max       stddev
                                      (msec)    (msec)    (msec)    (msec)        (%)
    --------------- --------  ------ -------- --------- --------- ---------     ------
-   io_pgetevents         10      0  4500.529     0.000   450.053   500.068     11.11%
+   io_pgetevents         10      0  4500.771     0.000   450.077   500.185     11.11%
 
 
- ib_io_rd-13 (150050), 20 events, 0.0%
-
-   syscall            calls  errors  total       min       avg       max       stddev
-                                     (msec)    (msec)    (msec)    (msec)        (%)
-   --------------- --------  ------ -------- --------- --------- ---------     ------
-   io_pgetevents         10      0  4500.840     0.000   450.084   500.185     11.11%
-
-
- ib_io_rd-14 (150051), 20 events, 0.0%
+ ib_io_rd-6 (354864), 20 events, 0.0%
 
    syscall            calls  errors  total       min       avg       max       stddev
                                      (msec)    (msec)    (msec)    (msec)        (%)
    --------------- --------  ------ -------- --------- --------- ---------     ------
-   io_pgetevents         10      0  4500.517     0.000   450.052   500.060     11.11%
+   io_pgetevents         10      0  4500.701     0.000   450.070   500.219     11.11%
 
 
- ib_io_rd-15 (150052), 20 events, 0.0%
-
-   syscall            calls  errors  total       min       avg       max       stddev
-                                     (msec)    (msec)    (msec)    (msec)        (%)
-   --------------- --------  ------ -------- --------- --------- ---------     ------
-   io_pgetevents         10      0  4500.514     0.000   450.051   500.057     11.11%
-
-
- ib_io_rd-16 (150053), 20 events, 0.0%
+ ib_io_rd-7 (354865), 20 events, 0.0%
 
    syscall            calls  errors  total       min       avg       max       stddev
                                      (msec)    (msec)    (msec)    (msec)        (%)
    --------------- --------  ------ -------- --------- --------- ---------     ------
-   io_pgetevents         10      0  4500.879     0.000   450.088   500.163     11.11%
+   io_pgetevents         10      0  4500.561     0.000   450.056   500.081     11.11%
 
 
- ib_io_rd-17 (150054), 20 events, 0.0%
-
-   syscall            calls  errors  total       min       avg       max       stddev
-                                     (msec)    (msec)    (msec)    (msec)        (%)
-   --------------- --------  ------ -------- --------- --------- ---------     ------
-   io_pgetevents         10      0  4500.996     0.000   450.100   500.238     11.11%
-
-
- ib_io_rd-18 (150055), 20 events, 0.0%
+ ib_io_rd-8 (354866), 20 events, 0.0%
 
    syscall            calls  errors  total       min       avg       max       stddev
                                      (msec)    (msec)    (msec)    (msec)        (%)
    --------------- --------  ------ -------- --------- --------- ---------     ------
-   io_pgetevents         10      0  4501.374     0.000   450.137   500.240     11.11%
+   io_pgetevents         10      0  4500.720     0.000   450.072   500.159     11.11%
 
 
- ib_io_rd-19 (150056), 20 events, 0.0%
-
-   syscall            calls  errors  total       min       avg       max       stddev
-                                     (msec)    (msec)    (msec)    (msec)        (%)
-   --------------- --------  ------ -------- --------- --------- ---------     ------
-   io_pgetevents         10      0  4500.520     0.000   450.052   500.059     11.11%
-
-
- ib_io_rd-20 (150057), 20 events, 0.0%
+ ib_io_rd-9 (354867), 20 events, 0.0%
 
    syscall            calls  errors  total       min       avg       max       stddev
                                      (msec)    (msec)    (msec)    (msec)        (%)
    --------------- --------  ------ -------- --------- --------- ---------     ------
-   io_pgetevents         10      0  4500.510     0.000   450.051   500.059     11.11%
+   io_pgetevents         10      0  4500.617     0.000   450.062   500.153     11.11%
 
 
- ib_io_rd-21 (150058), 20 events, 0.0%
-
-   syscall            calls  errors  total       min       avg       max       stddev
-                                     (msec)    (msec)    (msec)    (msec)        (%)
-   --------------- --------  ------ -------- --------- --------- ---------     ------
-   io_pgetevents         10      0  4500.516     0.000   450.052   500.065     11.11%
-
-
- ib_io_rd-22 (150059), 20 events, 0.0%
+ ib_io_rd-10 (354868), 20 events, 0.0%
 
    syscall            calls  errors  total       min       avg       max       stddev
                                      (msec)    (msec)    (msec)    (msec)        (%)
    --------------- --------  ------ -------- --------- --------- ---------     ------
-   io_pgetevents         10      0  4500.468     0.000   450.047   500.059     11.11%
+   io_pgetevents         10      0  4500.546     0.000   450.055   500.072     11.11%
 
 
- ib_io_rd-23 (150060), 20 events, 0.0%
-
-   syscall            calls  errors  total       min       avg       max       stddev
-                                     (msec)    (msec)    (msec)    (msec)        (%)
-   --------------- --------  ------ -------- --------- --------- ---------     ------
-   io_pgetevents         10      0  4500.733     0.000   450.073   500.159     11.11%
-
-
- ib_io_rd-24 (150061), 20 events, 0.0%
+ ib_io_rd-11 (354869), 20 events, 0.0%
 
    syscall            calls  errors  total       min       avg       max       stddev
                                      (msec)    (msec)    (msec)    (msec)        (%)
    --------------- --------  ------ -------- --------- --------- ---------     ------
-   io_pgetevents         10      0  4500.516     0.000   450.052   500.058     11.11%
+   io_pgetevents         10      0  4500.542     0.000   450.054   500.068     11.11%
 
 
- ib_io_wr-2 (150063), 20 events, 0.0%
-
-   syscall            calls  errors  total       min       avg       max       stddev
-                                     (msec)    (msec)    (msec)    (msec)        (%)
-   --------------- --------  ------ -------- --------- --------- ---------     ------
-   io_pgetevents         10      0  4500.859     0.000   450.086   500.164     11.11%
-
-
- ib_io_wr-3 (150064), 20 events, 0.0%
+ ib_io_rd-12 (354870), 20 events, 0.0%
 
    syscall            calls  errors  total       min       avg       max       stddev
                                      (msec)    (msec)    (msec)    (msec)        (%)
    --------------- --------  ------ -------- --------- --------- ---------     ------
-   io_pgetevents         10      0  4500.828     0.000   450.083   500.286     11.11%
+   io_pgetevents         10      0  4500.685     0.000   450.069   500.081     11.11%
 
 
- ib_io_wr-4 (150065), 20 events, 0.0%
-
-   syscall            calls  errors  total       min       avg       max       stddev
-                                     (msec)    (msec)    (msec)    (msec)        (%)
-   --------------- --------  ------ -------- --------- --------- ---------     ------
-   io_pgetevents         10      0  4500.876     0.000   450.088   500.186     11.11%
-
-
- ib_pg_flush_co (150066), 20 events, 0.0%
+ ib_io_rd-13 (354871), 20 events, 0.0%
 
    syscall            calls  errors  total       min       avg       max       stddev
                                      (msec)    (msec)    (msec)    (msec)        (%)
    --------------- --------  ------ -------- --------- --------- ---------     ------
-   futex                 10      5  4000.226     0.000   400.023  1000.057     40.82%
+   io_pgetevents         10      0  4500.547     0.000   450.055   500.068     11.11%
 
 
- ib_log_checkpt (150080), 20 events, 0.0%
-
-   syscall            calls  errors  total       min       avg       max       stddev
-                                     (msec)    (msec)    (msec)    (msec)        (%)
-   --------------- --------  ------ -------- --------- --------- ---------     ------
-   futex                 10      5  4000.480     0.000   400.048  1000.162     40.82%
-
-
- ib_srv_lock_to (150090), 20 events, 0.0%
+ ib_io_rd-14 (354872), 20 events, 0.0%
 
    syscall            calls  errors  total       min       avg       max       stddev
                                      (msec)    (msec)    (msec)    (msec)        (%)
    --------------- --------  ------ -------- --------- --------- ---------     ------
-   futex                 10      5  4000.402     0.000   400.040  1000.180     40.82%
+   io_pgetevents         10      0  4500.541     0.000   450.054   500.065     11.11%
 
 
- ib_srv_err_mon (150091), 20 events, 0.0%
-
-   syscall            calls  errors  total       min       avg       max       stddev
-                                     (msec)    (msec)    (msec)    (msec)        (%)
-   --------------- --------  ------ -------- --------- --------- ---------     ------
-   futex                 10      5  4000.338     0.000   400.034  1000.130     40.82%
-
-
- ib_srv_wkr-1 (150116), 20 events, 0.0%
+ ib_io_rd-15 (354873), 20 events, 0.0%
 
    syscall            calls  errors  total       min       avg       max       stddev
                                      (msec)    (msec)    (msec)    (msec)        (%)
    --------------- --------  ------ -------- --------- --------- ---------     ------
-   futex                 10      0  4000.478     0.000   400.048  1000.154     40.82%
+   io_pgetevents         10      0  4501.009     0.000   450.101   500.193     11.11%
 
 
- ib_srv_wkr-2 (150117), 20 events, 0.0%
-
-   syscall            calls  errors  total       min       avg       max       stddev
-                                     (msec)    (msec)    (msec)    (msec)        (%)
-   --------------- --------  ------ -------- --------- --------- ---------     ------
-   futex                 10      0  2000.364     0.000   200.036  1000.186     66.66%
-
-
- ib_srv_wkr-3 (150118), 32 events, 0.0%
+ ib_io_rd-16 (354874), 20 events, 0.0%
 
    syscall            calls  errors  total       min       avg       max       stddev
                                      (msec)    (msec)    (msec)    (msec)        (%)
    --------------- --------  ------ -------- --------- --------- ---------     ------
-   futex                 16      0  4000.333     0.000   250.021  1000.160     44.72%
+   io_pgetevents         10      0  4500.850     0.000   450.085   500.199     11.11%
 
 
- ib_src_main (150096), 40 events, 0.0%
-
-   syscall            calls  errors  total       min       avg       max       stddev
-                                     (msec)    (msec)    (msec)    (msec)        (%)
-   --------------- --------  ------ -------- --------- --------- ---------     ------
-   clock_nanosleep        5      0  4000.579     0.000   800.116  1000.156     25.00%
-   getrusage              5      0     0.045     0.009     0.009     0.009      1.61%
-   futex                  5      0     0.021     0.003     0.004     0.006      9.06%
-   sched_getaffinity        5      0     0.010     0.002     0.002     0.002      5.28%
-
-
- ib_log_fl_notif (150081), 192 events, 0.0%
+ ib_io_rd-17 (354875), 20 events, 0.0%
 
    syscall            calls  errors  total       min       avg       max       stddev
                                      (msec)    (msec)    (msec)    (msec)        (%)
    --------------- --------  ------ -------- --------- --------- ---------     ------
-   futex                 96     48  4706.116     0.000    49.022   100.240     10.48%
+   io_pgetevents         10      0  4501.172     0.000   450.117   500.264     11.11%
 
 
- ib_log_flush (150082), 192 events, 0.0%
-
-   syscall            calls  errors  total       min       avg       max       stddev
-                                     (msec)    (msec)    (msec)    (msec)        (%)
-   --------------- --------  ------ -------- --------- --------- ---------     ------
-   futex                 96     48  4706.847     0.000    49.030   100.340     10.48%
-
-
- ib_log_wr_notif (150083), 192 events, 0.0%
+ ib_io_rd-18 (354876), 20 events, 0.0%
 
    syscall            calls  errors  total       min       avg       max       stddev
                                      (msec)    (msec)    (msec)    (msec)        (%)
    --------------- --------  ------ -------- --------- --------- ---------     ------
-   futex                 96     48  4703.064     0.000    48.990   100.077     10.48%
+   io_pgetevents         10      0  4500.944     0.000   450.094   500.186     11.11%
 
 
- ib_log_writer (150084), 192 events, 0.0%
-
-   syscall            calls  errors  total       min       avg       max       stddev
-                                     (msec)    (msec)    (msec)    (msec)        (%)
-   --------------- --------  ------ -------- --------- --------- ---------     ------
-   futex                 96     48  4705.389     0.000    49.014   100.227     10.48%
-
-
- ib_clone_gtid (150114), 192 events, 0.0%
+ ib_io_rd-19 (354877), 20 events, 0.0%
 
    syscall            calls  errors  total       min       avg       max       stddev
                                      (msec)    (msec)    (msec)    (msec)        (%)
    --------------- --------  ------ -------- --------- --------- ---------     ------
-   futex                 96     48  4704.458     0.000    49.005   100.275     10.48%
+   io_pgetevents         10      0  4500.790     0.000   450.079   500.196     11.11%
 
 
- ib_srv_purge (150115), 246 events, 0.0%
-
-   syscall            calls  errors  total       min       avg       max       stddev
-                                     (msec)    (msec)    (msec)    (msec)        (%)
-   --------------- --------  ------ -------- --------- --------- ---------     ------
-   futex                 38      5  4009.778     0.000   105.520   989.948     47.26%
-   clock_nanosleep        8      0     0.622     0.075     0.078     0.080      1.03%
-   sched_yield           77      0     0.077     0.001     0.001     0.003      4.16%
-
-
- ib_log_files_g (150085), 1889 events, 0.1%
+ ib_io_rd-20 (354878), 20 events, 0.0%
 
    syscall            calls  errors  total       min       avg       max       stddev
                                      (msec)    (msec)    (msec)    (msec)        (%)
    --------------- --------  ------ -------- --------- --------- ---------     ------
-   futex                943    472  4788.277     0.001     5.078    10.316      3.25%
+   io_pgetevents         10      0  4500.706     0.000   450.071   500.214     11.11%
 
 
- mysqld (150109), 197291 events, 7.3%
-
-   syscall            calls  errors  total       min       avg       max       stddev
-                                     (msec)    (msec)    (msec)    (msec)        (%)
-   --------------- --------  ------ -------- --------- --------- ---------     ------
-   futex              61550   1569  3302.241     0.001     0.054     1.670      1.06%
-   pwritev2           27112      0   799.569     0.014     0.029     1.020      0.84%
-   clock_nanosleep     2903      0   220.590     0.028     0.076     0.277      0.18%
-   mprotect            6887      0    26.685     0.001     0.004     0.024      0.77%
-   pwrite64               9      0     0.203     0.018     0.023     0.040     11.11%
-   clone3                 1      0     0.021     0.021     0.021     0.021      0.00%
-   fdatasync              9      0     0.020     0.002     0.002     0.003      4.73%
-   munmap                 1      0     0.010     0.010     0.010     0.010      0.00%
-   mmap                   1      0     0.005     0.005     0.005     0.005      0.00%
-   rt_sigprocmask         2      0     0.002     0.001     0.001     0.001     20.12%
-
-
- connection (150135), 279488 events, 10.4%
+ ib_io_rd-21 (354879), 20 events, 0.0%
 
    syscall            calls  errors  total       min       avg       max       stddev
                                      (msec)    (msec)    (msec)    (msec)        (%)
    --------------- --------  ------ -------- --------- --------- ---------     ------
-   ppoll              24043      0  2537.421     0.001     0.106     1.405      0.91%
-   futex              16823    659  1006.542     0.001     0.060     1.204      1.56%
-   sendto             24774      0   188.735     0.002     0.008     0.037      0.46%
-   recvfrom           73514  24010   110.577     0.001     0.002     0.040      0.25%
-   mprotect             349      0     2.336     0.003     0.007     0.024      1.49%
+   io_pgetevents         10      0  4500.764     0.000   450.076   500.195     11.11%
 
 
- connection (150137), 296295 events, 11.0%
+ ib_io_rd-22 (354880), 20 events, 0.0%
 
    syscall            calls  errors  total       min       avg       max       stddev
                                      (msec)    (msec)    (msec)    (msec)        (%)
    --------------- --------  ------ -------- --------- --------- ---------     ------
-   ppoll              25582      0  2519.311     0.001     0.098     1.241      0.92%
-   futex              17884    718  1031.846     0.001     0.058     1.396      1.54%
-   sendto             26208      0   185.239     0.002     0.007     0.074      0.45%
-   recvfrom           77804  25493   116.574     0.001     0.001     0.027      0.25%
-   mprotect             374      0     2.449     0.003     0.007     0.026      1.79%
+   io_pgetevents         10      0  4500.531     0.000   450.053   500.061     11.11%
 
 
- connection (150139), 298626 events, 11.1%
+ ib_io_rd-23 (354881), 20 events, 0.0%
 
    syscall            calls  errors  total       min       avg       max       stddev
                                      (msec)    (msec)    (msec)    (msec)        (%)
    --------------- --------  ------ -------- --------- --------- ---------     ------
-   ppoll              25759      0  2497.137     0.001     0.097     1.442      0.93%
-   futex              18078    660  1015.028     0.001     0.056     1.164      1.56%
-   sendto             26407      0   188.334     0.002     0.007     0.047      0.45%
-   recvfrom           78403  25684   118.422     0.001     0.002     0.060      0.25%
-   mprotect             375      0     2.379     0.003     0.006     0.021      1.39%
+   io_pgetevents         10      0  4500.526     0.000   450.053   500.069     11.11%
 
 
- connection (150123), 316784 events, 11.8%
+ ib_io_rd-24 (354882), 20 events, 0.0%
 
    syscall            calls  errors  total       min       avg       max       stddev
                                      (msec)    (msec)    (msec)    (msec)        (%)
    --------------- --------  ------ -------- --------- --------- ---------     ------
-   ppoll              27352      0  2464.814     0.001     0.090     1.411      0.93%
-   futex              19328    814  1022.159     0.001     0.053     1.180      1.52%
-   sendto             28000      0   191.815     0.002     0.007     0.046      0.44%
-   recvfrom           83084  27245   126.211     0.001     0.002     0.269      0.32%
-   mprotect             390      0     2.763     0.003     0.007     0.039      1.88%
+   io_pgetevents         10      0  4500.711     0.000   450.071   500.160     11.11%
 
 
- connection (150134), 317311 events, 11.8%
+ ib_io_wr-1 (354883), 20 events, 0.0%
 
    syscall            calls  errors  total       min       avg       max       stddev
                                      (msec)    (msec)    (msec)    (msec)        (%)
    --------------- --------  ------ -------- --------- --------- ---------     ------
-   ppoll              27430      0  2487.209     0.001     0.091     1.447      0.93%
-   futex              19124    836  1031.990     0.001     0.054     0.956      1.51%
-   sendto             28053      0   186.883     0.002     0.007     0.046      0.44%
-   recvfrom           83388  27364   124.564     0.001     0.001     0.079      0.24%
-   mprotect             396      0     2.593     0.003     0.007     0.015      0.99%
+   io_pgetevents         10      0  4500.895     0.000   450.090   500.259     11.11%
 
 
- connection (150132), 321899 events, 12.0%
+ ib_io_wr-2 (354884), 20 events, 0.0%
 
    syscall            calls  errors  total       min       avg       max       stddev
                                      (msec)    (msec)    (msec)    (msec)        (%)
    --------------- --------  ------ -------- --------- --------- ---------     ------
-   ppoll              27828      0  2494.896     0.001     0.090     1.287      0.92%
-   futex              19567    832  1019.129     0.001     0.052     0.998      1.53%
-   sendto             28428      0   187.740     0.002     0.007     0.040      0.43%
-   recvfrom           84377  27715   124.906     0.001     0.001     0.088      0.25%
-   mprotect             403      0     2.675     0.003     0.007     0.019      1.16%
+   io_pgetevents         10      0  4501.073     0.000   450.107   500.204     11.11%
 
 
- connection (150131), 322890 events, 12.0%
+ ib_io_wr-3 (354885), 20 events, 0.0%
 
    syscall            calls  errors  total       min       avg       max       stddev
                                      (msec)    (msec)    (msec)    (msec)        (%)
    --------------- --------  ------ -------- --------- --------- ---------     ------
-   ppoll              27912      0  2476.465     0.001     0.089     1.403      0.93%
-   futex              19366    667  1029.774     0.001     0.053     0.893      1.50%
-   sendto             28576      0   189.225     0.002     0.007     0.040      0.44%
-   recvfrom           84910  27852   125.746     0.001     0.001     0.269      0.32%
-   mprotect             401      0     2.680     0.003     0.007     0.024      1.39%
+   io_pgetevents         10      0  4500.643     0.000   450.064   500.121     11.11%
 
 
- connection (150136), 338764 events, 12.6%
+ ib_io_wr-4 (354886), 20 events, 0.0%
 
    syscall            calls  errors  total       min       avg       max       stddev
                                      (msec)    (msec)    (msec)    (msec)        (%)
    --------------- --------  ------ -------- --------- --------- ---------     ------
-   ppoll              29299      0  2436.197     0.001     0.083     1.435      0.94%
-   futex              20436    708  1035.639     0.001     0.051     1.102      1.51%
-   sendto             29925      0   190.165     0.002     0.006     0.058      0.44%
-   recvfrom           89043  29259   132.924     0.001     0.001     0.070      0.23%
-   mprotect             421      0     2.924     0.002     0.007     0.024      1.32%
+   io_pgetevents         10      0  4500.567     0.000   450.057   500.078     11.11%
+
+
+ ib_pg_flush_co (354887), 20 events, 0.0%
+
+   syscall            calls  errors  total       min       avg       max       stddev
+                                     (msec)    (msec)    (msec)    (msec)        (%)
+   --------------- --------  ------ -------- --------- --------- ---------     ------
+   futex                 10      5  4000.359     0.000   400.036  1000.156     40.82%
+
+
+ ib_log_checkpt (354901), 20 events, 0.0%
+
+   syscall            calls  errors  total       min       avg       max       stddev
+                                     (msec)    (msec)    (msec)    (msec)        (%)
+   --------------- --------  ------ -------- --------- --------- ---------     ------
+   futex                 10      5  4000.584     0.000   400.058  1000.214     40.82%
+
+
+ ib_srv_lock_to (354911), 20 events, 0.0%
+
+   syscall            calls  errors  total       min       avg       max       stddev
+                                     (msec)    (msec)    (msec)    (msec)        (%)
+   --------------- --------  ------ -------- --------- --------- ---------     ------
+   futex                 10      5  4000.381     0.000   400.038  1000.185     40.82%
+
+
+ ib_srv_err_mon (354912), 20 events, 0.0%
+
+   syscall            calls  errors  total       min       avg       max       stddev
+                                     (msec)    (msec)    (msec)    (msec)        (%)
+   --------------- --------  ------ -------- --------- --------- ---------     ------
+   futex                 10      5  4000.373     0.000   400.037  1000.181     40.82%
+
+
+ ib_srv_wkr-1 (354953), 24 events, 0.0%
+
+   syscall            calls  errors  total       min       avg       max       stddev
+                                     (msec)    (msec)    (msec)    (msec)        (%)
+   --------------- --------  ------ -------- --------- --------- ---------     ------
+   futex                 12      0  4000.694     0.000   333.391  1000.413     42.64%
+
+
+ ib_srv_wkr-3 (354955), 28 events, 0.0%
+
+   syscall            calls  errors  total       min       avg       max       stddev
+                                     (msec)    (msec)    (msec)    (msec)        (%)
+   --------------- --------  ------ -------- --------- --------- ---------     ------
+   futex                 14      0  4000.706     0.000   285.765  1000.364     43.85%
+
+
+ ib_src_main (354917), 40 events, 0.0%
+
+   syscall            calls  errors  total       min       avg       max       stddev
+                                     (msec)    (msec)    (msec)    (msec)        (%)
+   --------------- --------  ------ -------- --------- --------- ---------     ------
+   clock_nanosleep        5      0  4000.256     0.000   800.051  1000.064     25.00%
+   getrusage              5      0     0.037     0.007     0.007     0.008      4.35%
+   futex                  5      0     0.012     0.001     0.002     0.003     11.67%
+   sched_getaffinity        5      0     0.009     0.001     0.002     0.002     10.17%
+
+
+ ib_clone_gtid (354951), 190 events, 0.0%
+
+   syscall            calls  errors  total       min       avg       max       stddev
+                                     (msec)    (msec)    (msec)    (msec)        (%)
+   --------------- --------  ------ -------- --------- --------- ---------     ------
+   futex                 94     47  4704.210     0.001    50.045   100.246     10.37%
+
+
+ ib_log_flush (354903), 191 events, 0.0%
+
+   syscall            calls  errors  total       min       avg       max       stddev
+                                     (msec)    (msec)    (msec)    (msec)        (%)
+   --------------- --------  ------ -------- --------- --------- ---------     ------
+   futex                 95     48  4704.739     0.000    49.524   100.314     10.42%
+
+
+ ib_log_fl_notif (354902), 192 events, 0.0%
+
+   syscall            calls  errors  total       min       avg       max       stddev
+                                     (msec)    (msec)    (msec)    (msec)        (%)
+   --------------- --------  ------ -------- --------- --------- ---------     ------
+   futex                 96     48  4705.356     0.000    49.014   100.267     10.48%
+
+
+ ib_log_wr_notif (354904), 192 events, 0.0%
+
+   syscall            calls  errors  total       min       avg       max       stddev
+                                     (msec)    (msec)    (msec)    (msec)        (%)
+   --------------- --------  ------ -------- --------- --------- ---------     ------
+   futex                 96     48  4703.670     0.000    48.997   100.148     10.48%
+
+
+ ib_log_writer (354905), 192 events, 0.0%
+
+   syscall            calls  errors  total       min       avg       max       stddev
+                                     (msec)    (msec)    (msec)    (msec)        (%)
+   --------------- --------  ------ -------- --------- --------- ---------     ------
+   futex                 96     48  4703.367     0.000    48.993   100.083     10.48%
+
+
+ ib_srv_purge (354952), 284 events, 0.0%
+
+   syscall            calls  errors  total       min       avg       max       stddev
+                                     (msec)    (msec)    (msec)    (msec)        (%)
+   --------------- --------  ------ -------- --------- --------- ---------     ------
+   futex                 37      5  4009.821     0.000   108.374   989.905     47.19%
+   clock_nanosleep       10      0     0.772     0.075     0.077     0.081      0.96%
+   sched_yield           95      0     0.098     0.001     0.001     0.009      8.73%
+
+
+ ib_log_files_g (354906), 1886 events, 0.1%
+
+   syscall            calls  errors  total       min       avg       max       stddev
+                                     (msec)    (msec)    (msec)    (msec)        (%)
+   --------------- --------  ------ -------- --------- --------- ---------     ------
+   futex                942    471  4773.768     0.001     5.068    10.304      3.26%
+
+
+ mysqld (354946), 176664 events, 7.2%
+
+   syscall            calls  errors  total       min       avg       max       stddev
+                                     (msec)    (msec)    (msec)    (msec)        (%)
+   --------------- --------  ------ -------- --------- --------- ---------     ------
+   futex              55020   1522  3373.383     0.001     0.061     2.174      1.10%
+   pwritev2           24017      0   751.702     0.014     0.031     1.002      0.89%
+   clock_nanosleep     2824      0   214.762     0.028     0.076     0.111      0.16%
+   mprotect            6298      0    25.163     0.001     0.004     0.048      0.76%
+   fdatasync              8      0     0.739     0.002     0.092     0.723     97.63%
+   pwrite64               8      0     0.581     0.019     0.073     0.377     60.02%
+   clone3                 1      0     0.025     0.025     0.025     0.025      0.00%
+   rt_sigprocmask         2      0     0.002     0.001     0.001     0.002     26.66%
+
+
+ connection (354978), 266360 events, 10.8%
+
+   syscall            calls  errors  total       min       avg       max       stddev
+                                     (msec)    (msec)    (msec)    (msec)        (%)
+   --------------- --------  ------ -------- --------- --------- ---------     ------
+   ppoll              22888      0  2527.223     0.001     0.110     1.299      0.92%
+   futex              16231    748  1023.117     0.001     0.063     1.170      1.56%
+   sendto             23604      0   182.299     0.002     0.008     0.060      0.45%
+   recvfrom           69990  22848   108.058     0.001     0.002     0.478      0.58%
+   mprotect             333      0     2.237     0.002     0.007     0.026      1.85%
+
+
+ connection (354973), 269742 events, 11.0%
+
+   syscall            calls  errors  total       min       avg       max       stddev
+                                     (msec)    (msec)    (msec)    (msec)        (%)
+   --------------- --------  ------ -------- --------- --------- ---------     ------
+   ppoll              23207      0  2558.231     0.001     0.110     1.077      0.91%
+   futex              16568    772  1011.578     0.001     0.061     1.273      1.56%
+   sendto             23864      0   182.289     0.002     0.008     0.037      0.45%
+   recvfrom           70747  23137   107.495     0.001     0.002     0.322      0.39%
+   mprotect             337      0     2.186     0.002     0.006     0.021      1.44%
+
+
+ connection (354968), 270928 events, 11.0%
+
+   syscall            calls  errors  total       min       avg       max       stddev
+                                     (msec)    (msec)    (msec)    (msec)        (%)
+   --------------- --------  ------ -------- --------- --------- ---------     ------
+   ppoll              23304      0  2561.858     0.001     0.110     1.071      0.91%
+   futex              16479    663  1018.315     0.001     0.062     1.198      1.56%
+   sendto             23975      0   180.623     0.002     0.008     0.036      0.45%
+   recvfrom           71095  23250   109.067     0.001     0.002     0.446      0.81%
+   mprotect             344      0     2.188     0.002     0.006     0.022      1.75%
+
+
+ connection (354960), 283896 events, 11.5%
+
+   syscall            calls  errors  total       min       avg       max       stddev
+                                     (msec)    (msec)    (msec)    (msec)        (%)
+   --------------- --------  ------ -------- --------- --------- ---------     ------
+   ppoll              24389      0  2536.446     0.001     0.104     1.096      0.91%
+   futex              17592    798  1022.898     0.001     0.058     1.354      1.55%
+   sendto             25063      0   182.818     0.002     0.007     0.040      0.45%
+   recvfrom           74336  24324   113.071     0.001     0.002     0.318      0.37%
+   mprotect             353      0     2.276     0.003     0.006     0.023      1.82%
+
+
+ connection (354976), 286467 events, 11.6%
+
+   syscall            calls  errors  total       min       avg       max       stddev
+                                     (msec)    (msec)    (msec)    (msec)        (%)
+   --------------- --------  ------ -------- --------- --------- ---------     ------
+   ppoll              24220      0  2509.219     0.001     0.104     1.251      0.92%
+   futex              19707   1531  1026.198     0.001     0.052     1.175      1.55%
+   sendto             24862      0   184.923     0.002     0.007     0.037      0.43%
+   recvfrom           73874  24196   113.965     0.001     0.002     0.064      0.24%
+   mprotect             351      0     2.364     0.003     0.007     0.023      1.44%
+
+
+ connection (354975), 291851 events, 11.9%
+
+   syscall            calls  errors  total       min       avg       max       stddev
+                                     (msec)    (msec)    (msec)    (msec)        (%)
+   --------------- --------  ------ -------- --------- --------- ---------     ------
+   ppoll              24697      0  2525.517     0.001     0.102     1.106      0.92%
+   futex              19930   1507  1000.453     0.001     0.050     1.076      1.58%
+   sendto             25381      0   189.741     0.002     0.007     2.019      1.15%
+   recvfrom           75325  24637   116.601     0.001     0.002     0.027      0.24%
+   mprotect             359      0     2.339     0.002     0.007     0.023      1.83%
+
+
+ connection (354974), 301856 events, 12.3%
+
+   syscall            calls  errors  total       min       avg       max       stddev
+                                     (msec)    (msec)    (msec)    (msec)        (%)
+   --------------- --------  ------ -------- --------- --------- ---------     ------
+   ppoll              25910      0  2486.966     0.001     0.096     1.069      0.93%
+   futex              18927    968  1030.575     0.001     0.054     1.024      1.52%
+   sendto             26571      0   186.850     0.002     0.007     0.099      0.44%
+   recvfrom           78982  25881   119.786     0.001     0.002     0.273      0.33%
+   mprotect             376      0     2.504     0.002     0.007     0.024      1.52%
+
+
+ connection (354977), 309644 events, 12.6%
+
+   syscall            calls  errors  total       min       avg       max       stddev
+                                     (msec)    (msec)    (msec)    (msec)        (%)
+   --------------- --------  ------ -------- --------- --------- ---------     ------
+   ppoll              26680      0  2533.052     0.001     0.095     1.126      0.92%
+   futex              19257    976  1001.093     0.001     0.052     1.163      1.55%
+   sendto             27266      0   185.416     0.002     0.007     0.067      0.43%
+   recvfrom           81106  26632   121.012     0.001     0.001     0.260      0.32%
+   mprotect             388      0     2.345     0.002     0.006     0.024      1.55%
 
 

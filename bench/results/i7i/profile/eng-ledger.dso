@@ -1,0 +1,12 @@
+    44.56%  mysqld              
+                                  0x77d2a24abe6b
+                                  0x77d2a253f55c
+    29.88%  [kernel.kallsyms]   
+    11.71%  libc.so.6           
+     9.55%  ha_celltnx.so       
+                                                        0x77d2a24abe6b
+                                                        0x77d2a253f55c
+     2.61%  libcrypto.so.3      
+     1.10%  [vdso]              
+     0.58%  libstdc++.so.6.0.35 
+     0.01%  ld-linux-x86-64.so.2

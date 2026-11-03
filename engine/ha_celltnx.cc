@@ -3,13 +3,12 @@
 #include <algorithm>
 #include <bit>
 #include <chrono>
-#include <condition_variable>
 #include <map>
 #include <mutex>
 #include <thread>
-#include <unordered_map>
 
 #include "keys.h"
+#include "row_locks.h"
 #include "sql/dd/types/table.h"
 #include "sql/mysqld.h"
 #include "store.h"
@@ -426,77 +425,6 @@ uint commit_delay_us_var = 0;
 uint group_wait_us_var = 500;
 const char *mode_names[] = {"row", "cell", "cell+delta", NullS};
 TYPELIB mode_typelib = {array_elements(mode_names) - 1, "", mode_names, nullptr};
-
-// RowLocks queues transactions that read a row with SELECT ... FOR UPDATE,
-// so a hot read-modify-write waits for the previous one to commit instead
-// of failing validation and rerunning. The locks are advisory: commit-time
-// validation alone decides serializability, so a wait that times out costs
-// at most a conflict. Only a transaction holding no lock waits, so no wait
-// can close a cycle.
-class RowLocks {
- public:
-  enum class Got { kHeld, kFree, kWaited, kBusy, kUnused };
-
-  // Acquire takes key for owner, which uses cols of the row, or reports
-  // kHeld if owner has it. When another owner holds the key it waits, if
-  // wait is set, until the key is free, the timeout passes, or thd is
-  // killed. With if_used, it takes nothing and reports kUnused unless the
-  // key's holder or waiters use one of cols.
-  Got Acquire(THD *thd, const std::string &key, const void *owner, ColMask cols, bool wait,
-              std::chrono::milliseconds timeout, bool if_used = false) {
-    Shard &sh = shards_[std::hash<std::string>{}(key) % kShards];
-    std::unique_lock g(sh.mu);
-    if (if_used) {
-      auto it = sh.map.find(key);
-      if (it == sh.map.end() || (it->second.cols & cols) == 0) return Got::kUnused;
-    }
-    Entry &e = sh.map[key];
-    e.cols |= cols;
-    if (e.owner == owner) return Got::kHeld;
-    if (e.owner == nullptr) {
-      e.owner = owner;
-      return Got::kFree;
-    }
-    if (!wait || timeout.count() == 0) return Got::kBusy;
-    auto deadline = std::chrono::steady_clock::now() + timeout;
-    e.waiters++;
-    while (e.owner != nullptr && std::chrono::steady_clock::now() < deadline && !thd_killed(thd))
-      sh.cv.wait_until(g, std::min(deadline, std::chrono::steady_clock::now() + std::chrono::milliseconds(100)));
-    e.waiters--;
-    if (e.owner != nullptr) return Got::kBusy;
-    e.owner = owner;
-    return Got::kWaited;
-  }
-
-  void Release(const std::string &key) {
-    Shard &sh = shards_[std::hash<std::string>{}(key) % kShards];
-    std::lock_guard g(sh.mu);
-    auto it = sh.map.find(key);
-    if (it == sh.map.end()) return;
-    if (it->second.waiters == 0) {
-      sh.map.erase(it);
-      return;
-    }
-    it->second.owner = nullptr;
-    sh.cv.notify_all();
-  }
-
- private:
-  static constexpr size_t kShards = 64;
-  struct Entry {
-    const void *owner = nullptr;
-    // The columns the holders and waiters since the entry's creation read
-    // or assign; it resets when the key falls idle.
-    ColMask cols = 0;
-    int waiters = 0;
-  };
-  struct Shard {
-    std::mutex mu;
-    std::condition_variable cv;
-    std::unordered_map<std::string, Entry> map;  // node-based: entries stay put while waiters hold them
-  };
-  Shard shards_[kShards];
-};
 
 // Counters back the global status variables.
 struct Counters {
@@ -1318,8 +1246,9 @@ int ha_celltnx::LockRow(std::string_view pk, bool if_used) {
   key.append(pk);
   bool wait = trx->locks.empty() && lock_wait_ms_var > 0;
   ColMask cols = if_used ? delta_ : track_;
-  auto got =
-      engine->locks.Acquire(thd, key, trx, cols, wait, std::chrono::milliseconds(lock_wait_ms_var), if_used);
+  auto got = engine->locks.Acquire(
+      key, trx, cols, wait, std::chrono::milliseconds(lock_wait_ms_var), [thd] { return thd_killed(thd) != 0; },
+      if_used);
   if (got == RowLocks::Got::kWaited) counters.lock_waits.fetch_add(1, std::memory_order_relaxed);
   if (got == RowLocks::Got::kBusy && wait) counters.lock_timeouts.fetch_add(1, std::memory_order_relaxed);
   if (got == RowLocks::Got::kBusy || got == RowLocks::Got::kHeld || got == RowLocks::Got::kUnused) return 0;
